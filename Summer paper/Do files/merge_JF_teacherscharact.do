@@ -1,42 +1,42 @@
+* Project: Summer Paper
+* Written by: Camila Ayala (mc.ayala94@gmail.com)
+* Purpose: This do file merges JF variable with other teachers' variables
+
+
 cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
 set scheme plotplainblind
 
+* Open JF dataset with his variable
 
-use "Data/merge_JF_teachers.dta", clear
+	use "Data/merge_JF_teachers.dta", clear
 
-	duplicates tag document_id year codigo_dane, gen(dup2)
+* Drop duplicates: when I sent him the dataset, it had still duplicates
+	rename codigo_dane school_code
+	duplicates tag document_id year school_code, gen(dup2)
 	drop if dup2 == 1
+	drop dup2
+	isid document_id year school_code
 
-isid document_id year codigo_dane
+* Merge teacher's characteristics
+	merge 1:1 document_id year school_code using "Data/base_docentes_clean_2011_2017.dta", assert(3) nogen update
+	lab var year "Year"
+	lab var document_id "Teacher ID"
+	lab var school_code "School code (codigo DANE)"
 
+* Keep only secondary teachers
+	tab teaching_level
+	keep if teaching_level == 3 // secundaria
 
-merge 1:1 document_id year codigo_dane using "Docentes 2008-2017/base_docentes_2022-05-18.dta", assert(3) nogen
+* Save dataset
+	save "Data/merge_JF_teachers_secundaria.dta", replace
 
-
-* Generate area
-	gen subject = .
-	lab def subject_l 1 "Math" 2 "Language" 3 "Natural sciences" 4 "Social sciences" 5 "English"
-	replace subject = 1 if inlist(area_ensenanza_nombrado, "15")
-	replace subject = 2 if inlist(area_ensenanza_nombrado, "12")
-	replace subject = 3 if inlist(area_ensenanza_nombrado, "3", "17", "18")
-	replace subject = 4 if inlist(area_ensenanza_nombrado, "4")
-	replace subject = 5 if inlist(area_ensenanza_nombrado, "14")
-	lab values subject subject_l
-	ta subject connected_ty, row
-	ta subject connected_tby, row
-
-* Collapse by subject
-	drop if mi(subject)
-	keep if nivel_ensenanza == "3" // secundaria
-	gen n = 1
+/*	
 	
-		save "Data/merge_JF_teachers_secundaria.dta", replace
-
 	collapse (sum) n (mean) connected_ty connected_tby, by(codigo_dane year subject)
 
 	
 hist connected_ty, by(year) name(conected_hist, replace)	 percent
--
+
 hist connected_ty if connected_ty>0, by(year) name(conected_hist2, replace)	percent
 	
 * Concurso docente * 
