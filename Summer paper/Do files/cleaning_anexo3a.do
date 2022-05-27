@@ -24,10 +24,17 @@
 		rename ultimo_nivel_educativo nivel_educativo_aprobado
 		rename tipo_doc tipo_documento
 		
-	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento
+	* Day of birth
+		split fecha_nacimiento, p("/")
+		tab fecha_nacimiento3
+		destring fecha_nacimiento3, replace
+		gen edad = 2013 - fecha_nacimiento3
+		
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
 	tempfile docentes13
 	save	`docentes13'		
 	
+* 2013
 	import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 	gen year = 2011
 	
@@ -40,8 +47,14 @@
 		rename area_ensenanza_tec area_ensenanza_tecnica
 		rename ultimo_nivel_educativo nivel_educativo_aprobado
 		rename tipo_doc tipo_documento
-		
-	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento
+	
+	* Day of birth
+		split fecha_nacimiento, p("/")
+		tab fecha_nacimiento3
+		destring fecha_nacimiento3, replace
+		gen edad = 2011 - fecha_nacimiento3	
+	
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
 	tempfile docentes11
 	save	`docentes11'
 	
@@ -66,6 +79,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		
 	* Tostring vars for merge
 		tostring cargo area_ensenanza_nombrado nivel_ensenanza nivel_educativo_aprobado nombre_cargo ubicacion zona tipo_documento, replace
+		destring edad, replace
 	
 	* Append date for 2011 and 2013
 		append using `docentes11'
@@ -105,6 +119,12 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		replace type_id = 2 if tipo_documento == "3"
 		lab val type_id type_id_l
 		lab var type_id "Document type"
+	
+	* Age
+		tab edad
+		gen age = edad
+		replace age = . if edad <= 18 & edad >= 80
+		lab var age "Teacher's age'"
 	
 	* Sex
 		tab year genero, m
