@@ -123,16 +123,23 @@ cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
 			replace cole_caracter = 4 if cole_caracter_old == "NO APLICA"
 			lab val cole_caracter cole_caracter_l
 		 
-		
-		if inlist(`x', 20142, 20151, 20152) {
+if inlist(`x', 20122, 20131, 20132, 20141) {
+	di "loop 1"
+			destring punt_matematicas punt_ingles punt_ciencias_sociales punt_biologia punt_filosofia punt_fisica punt_quimica punt_lenguaje punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia punt_profundiza_csociales punt_profundiza_lenguaje punt_profundiza_matematica, replace force
+	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old recaf_*
+	}			
+else if inlist(`x', 20142, 20151, 20152) {
+			di "loop 2"
 		keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas  punt_razona_cuantitativo  punt_comp_ciudadana  punt_ingles  desemp_ingles punt_global estu_puesto *_old
 	}
-		if inlist(`x', 20111, 20112, 20121, 20122, 20131, 20132, 20141) {
+else if inlist(`x', 20111, 20112, 20121) {
+			di "loop 3"
 			destring punt_matematicas punt_ingles punt_ciencias_sociales punt_biologia punt_filosofia punt_fisica punt_quimica punt_lenguaje punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia punt_profundiza_csociales punt_profundiza_lenguaje punt_profundiza_matematica, replace force
 	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old
 	}
-		
-		else {
+
+else {
+			di "loop 4"
 			keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas   punt_ingles  desemp_ingles punt_global *_old
 		}
 		
@@ -163,7 +170,75 @@ cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
 		tab cole_bilingue_old cole_bilingue, m 
 		tab cole_caracter_old cole_caracter, m
 		drop *_old
+		
+*------------------*		
+* Construct scores *
+*------------------*		
+	
+	* Info can be found in "Dropbox/PhD/Second year/Summer paper/Dataicfes/4. Saber11/2. Documentación/1. Saber11/1. Documentación_Saber11.pdf"
+		
+	*------------------*
+	* 2012-2 to 2014-1 *
+	*------------------*
+	
+	* Scores was re-scored to be comparable with 2014-2 onwards
+		bys periodo: mdesc recaf_*
+		
+	* Replace scores
+		foreach subject in matematicas lectura_critica c_naturales sociales_ciudadanas ingles {
+			gen 	score_`subject' = .
+			replace score_`subject' = recaf_punt_`subject' if inlist(periodo, 20122, 20131, 20132, 20141)
+		}		
+		
+	*----------------*
+	* 2014-2 onwards *
+	*----------------*
+		
+	* Final 5 areas: math, critic reading, natural science, social science, english
+		foreach subject in matematicas lectura_critica c_naturales sociales_ciudadanas ingles {
+			replace score_`subject' = punt_`subject' if inlist(periodo, 20142, 20151, 20152, 20161, 20162, 20171, 20172)
+		}
+		bys period: sum score_*
+		
+		
+	*--------------*
+	* Global score *
+	*--------------*
+	
+	
+		
+		
+	bys periodo: sum punt_matematicas punt_lectura_critica  punt_c_naturales punt_sociales_ciudadanas punt_ingles punt_global
+	
+	
 	
 	save "Data/SB11_2011_2017_individual.dta", replace
 
+	
+	
+	
+	
+	
+	
+	recaf_punt_sociales_ciudadanas recaf_punt_ingles recaf_punt_lectura_critica recaf_punt_matematicas recaf_punt_c_naturales
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
