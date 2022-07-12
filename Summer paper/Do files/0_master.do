@@ -12,9 +12,10 @@ cd "/Users/camila/Documents/GitHub/mcayala_research/Summer paper/"
 * Anexo 3a
 	doedit "Do files/cleaning_anexo3a.do"
 
-* Saber 11
+* Saber 11 individual level
 	doedit "Do files/cleaning_saber11.do"
 
+* Saber 11 school level
 
 *---------*
 * Merging *

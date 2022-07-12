@@ -1,6 +1,6 @@
 * Project: Summer Paper
 * Written by: Camila Ayala (mc.ayala94@gmail.com)
-* Purpose: This do file merges JF variable with other teachers' variables
+* Purpose: This do file merges JF variable with other teachers' variables and test scores
 
 
 cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
@@ -27,6 +27,12 @@ set scheme plotplainblind
 	tab teaching_level
 	keep if teaching_level == 3 // secundaria
 
+*----------------*
+* Merge Saber 11 *
+*----------------*	
+	
+	
+	
 * Save dataset
 	save "Data/merge_JF_teachers_secundaria.dta", replace
 
