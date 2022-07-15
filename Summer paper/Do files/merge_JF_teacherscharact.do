@@ -22,12 +22,12 @@ set scheme plotplainblind
 	lab var year "Year"
 	lab var document_id "Teacher ID"
 	lab var school_code "School code (codigo DANE)"
-
+	
 * Keep only secondary teachers
 	tab teaching_level icfes_subject, m row
 	keep if teaching_level == 3 // secundaria
 	keep if !mi(icfes_subject) // only the subjects that are relevant for Saber 11
-
+	
 *----------------*
 * Merge Saber 11 *
 *----------------*	
@@ -35,6 +35,7 @@ set scheme plotplainblind
 	rename school_code school_code2
 	destring school_code2, gen(double school_code) 
 	format school_code %16.0g
+	preserve
 
 * Merge Saber 11 test scores
 	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
@@ -52,7 +53,43 @@ set scheme plotplainblind
 	
 * Save dataset
 	save "Data/merge_JF_teachers_secundaria.dta", replace
+	restore
+	
+*--------------------------------------------*
+* Create dataset at the school-subject level *
+*--------------------------------------------*	
 
+	* Create contorls
+		gen temporary = (type_contract == 1)
+		gen posgraduate = (educ_level == 4)
+		
+	* Collapse
+		br school_code year icfes_subject connected_ty connected_tby
+		gen N_teachers = 1
+		collapse (sum) connected_ty connected_tby N_teachers (mean) temporary female posgraduate, by(school_code year icfes_subject)
+	
+	* Gen shares
+		gen share_connected_ty = connected_ty/N_teachers
+		gen share_connected_tby = connected_tby/N_teachers
+
+	* Merge Saber 11 test scores
+		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"	
+		/*
+			 Result                      Number of obs
+			-----------------------------------------
+			Not matched                       228,241
+				from master                    42,689  (_merge==1)
+				from using                    185,552  (_merge==2)
+
+			Matched                           160,576  (_merge==3)
+			-----------------------------------------
+		*/
+		keep if _merge == 3
+	
+	* Save dataset
+		save "Data/school_subject_with_testscores_dataset.dta", replace
+	
+		
 /*	
 	
 	collapse (sum) n (mean) connected_ty connected_tby, by(codigo_dane year subject)

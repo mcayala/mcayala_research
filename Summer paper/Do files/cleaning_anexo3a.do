@@ -274,5 +274,8 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 	* Save dataset
 		*export delimited using "Docentes 2008-2017/base_docentes.csv", replace	
 		save "Data/base_docentes_clean_2011_2017.dta", replace
-	
-	
+
+		
+		
+
+
