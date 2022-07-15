@@ -205,39 +205,75 @@ else {
 	* Global score *
 	*--------------*
 	
-	
+	* Calculate global scores using the forumula in documentation
+		gen score_global = 5*(3*score_matematicas + 3*score_lectura_critica + 3*score_c_naturales + 3*score_sociales_ciudadanas + score_ingles)/13
+		replace score_global = round(score_global)
 		
-		
-	bys periodo: sum punt_matematicas punt_lectura_critica  punt_c_naturales punt_sociales_ciudadanas punt_ingles punt_global
-	
+		bys period: sum punt_global score_global 	
 	
 	
 	save "Data/SB11_2011_2017_individual.dta", replace
 
 	
+*---------------------------------------*		
+* Construct dataset at the school level *
+*---------------------------------------*		
 	
+	use "Data/SB11_2011_2017_individual.dta", clear
 	
+	* Create control vars
+		tab estu_genero, gen(stu_sex_)
+		rename stu_sex_1 male
+		rename stu_sex_2 female
+		
+		tab fami_estratovivienda, gen(strata_)
+		
+	* Parents education: high school complete or more
+		gen	 	mother_educ = 1 if inlist(fami_educacionmadre, 0, 1, 2, 3)
+		replace mother_educ = 0 if inlist(fami_educacionmadre, 4, 5, 6, 7, 8, 9)
+		gen	 	father_educ = 1 if inlist(fami_educacionpadre, 0, 1, 2, 3)
+		replace father_educ = 0 if inlist(fami_educacionpadre, 4, 5, 6, 7, 8, 9)
+		
+	* Collapse by the school
+		collapse (mean) score_* male female strata_* father_educ mother_educ (count) N = score_global (first) cole_calendario, by(periodo cole_cod_dane_establecimiento)
+		rename cole_cod_dane_establecimiento school_code
+		drop if mi(school_code)
+		sort school_code periodo
+		isid school_code periodo
+		
+	* Keep only relevant periods and we keep only first period
+		drop if period <= 20121
+		drop if inlist(period, 20121, 20131, 20141, 20151, 20161, 20171)
+		
+	* Gen year 
+		tostring(period), gen(year)
+		replace year = substr(year,1,4)
+		destring year, replace
+		isid school_code year
 	
+*------------------------------------------*
+* Reshape to have a school-subject dataset * 
+*------------------------------------------*
+
+	reshape long score_ , i(school_code year) j(subject) string
+	rename score_ score
+
+	* Gen subject var
+		gen 	subject_icfes = .
+		lab def subject_icfes_l 1 "Lectura critica" 2 "Matematicas" 3 "Ciencias naturales" 4 "Sociales y ciudadanas" 5 "Ingles"
+		replace subject_icfes = 1 if inlist(subject, "lectura_critica")
+		replace subject_icfes = 2 if inlist(subject, "matematicas")
+		replace subject_icfes = 3 if inlist(subject, "c_naturales")
+		replace subject_icfes = 4 if inlist(subject, "sociales_ciudadanas")
+		replace subject_icfes = 5 if inlist(subject, "ingles")
+		lab val subject_icfes subject_icfes_l
+		rename subject_icfes icfes_subject
+		drop subject
 	
+	*rename school_code school_code2
+	*tostring school_code2, gen(str20 school_code) force
 	
-	recaf_punt_sociales_ciudadanas recaf_punt_ingles recaf_punt_lectura_critica recaf_punt_matematicas recaf_punt_c_naturales
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	save "Data/SB11_2011_2017_school_level.dta", replace
 	
 	
 	

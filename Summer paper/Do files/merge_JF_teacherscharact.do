@@ -24,14 +24,31 @@ set scheme plotplainblind
 	lab var school_code "School code (codigo DANE)"
 
 * Keep only secondary teachers
-	tab teaching_level
+	tab teaching_level icfes_subject, m row
 	keep if teaching_level == 3 // secundaria
+	keep if !mi(icfes_subject) // only the subjects that are relevant for Saber 11
 
 *----------------*
 * Merge Saber 11 *
 *----------------*	
-	
-	
+
+	rename school_code school_code2
+	destring school_code2, gen(double school_code) 
+	format school_code %16.0g
+
+* Merge Saber 11 test scores
+	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
+	/*
+	    Result                      Number of obs
+    -----------------------------------------
+    Not matched                       289,568
+        from master                   104,016  (_merge==1)
+        from using                    185,552  (_merge==2)
+
+    Matched                           525,099  (_merge==3)
+    -----------------------------------------
+	*/
+	keep if _merge == 3
 	
 * Save dataset
 	save "Data/merge_JF_teachers_secundaria.dta", replace
