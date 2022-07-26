@@ -9,6 +9,10 @@
 * Datasets 2011 and 2013 *
 *------------------------*
 
+*------*
+* 2013 *
+*------*
+
 * These ones need to be cleaned separately because codigo_dane or teacher ID was wrong in the complete dataset	
 	
 	use "Docentes 2008-2017/BASE_DOCENTES_2013.dta", clear,
@@ -34,8 +38,10 @@
 	tempfile docentes13
 	save	`docentes13'		
 	
-* 2013
-	import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
+*------*
+* 2011 *
+*------*	
+import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 	gen year = 2011
 	
 	* Drop if missing nro_documento
@@ -58,6 +64,32 @@
 	tempfile docentes11
 	save	`docentes11'
 	
+*------*
+* 2012 *
+*------*
+	import delimited "Anexo 3a/BASE_DOCENTES_2012.csv", clear stringcols(_all)
+	gen year = 2012
+	
+	* Drop if missing nro_documento
+		rename num_doc nro_documento
+		drop if nro_documento == " " // 1 obs deleted
+		
+	* Rename variables for merge
+		rename area_ensenanza area_ensenanza_nombrado
+		rename area_ensenanza_tec area_ensenanza_tecnica
+		rename ultimo_nivel_educativo nivel_educativo_aprobado
+		rename tipo_doc tipo_documento
+	
+	* Day of birth
+		split fecha_nacimiento, p("/")
+		tab fecha_nacimiento3
+		destring fecha_nacimiento3, replace
+		gen edad = 2012 - fecha_nacimiento3	
+	
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
+	tempfile docentes12
+	save	`docentes12'	
+	
 *----------------------*
 * Dataset 2012 to 2017 *
 *----------------------*	
@@ -68,6 +100,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		sort nro_documento
 		tab anno_inf if nro_documento == " " // its 2013, that's why we copy 
 		drop if nro_documento == " " 
+		drop if anno_inf == 2012
 		
 	* Check codigo_dane and nro_documento
 		br anno_inf nro_documento codigo_dane codigo_sed
@@ -83,6 +116,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 	
 	* Append date for 2011 and 2013
 		append using `docentes11'
+		append using `docentes12'
 		append using `docentes13'
 	
 	* Check missings
@@ -270,7 +304,55 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		replace subject_icfes = 5 if inlist(subject, 14)
 		lab val subject_icfes subject_icfes_l
 		rename subject_icfes icfes_subject
+		
+*------------------------*
+* Cleaning of last names *
+*------------------------*
+
+use "Data/base_docentes_clean_2011_2017.dta", clear
+
+	br year apellido1 apellido2 document_id
+	sort document_id apellido1 apellido2
 	
+	* Ñ and accents
+		foreach var in apellido1 apellido2 {
+			replace `var' = upper(`var')
+			replace `var' = subinstr(`var', "Ñ", "N",.)
+			replace `var' = subinstr(`var', "Á", "A",.)
+			replace `var' = subinstr(`var', "É", "E",.)
+			replace `var' = subinstr(`var', "Í", "I",.)
+			replace `var' = subinstr(`var', "Ó", "O",.)
+			replace `var' = subinstr(`var', "Ú", "U",.)
+		}
+
+		foreach var in apellido1 apellido2 {
+			replace `var' = "ALVAREZ" if `var' == "?LVAREZ"
+			replace `var' = "ARBELAEZ" if `var' == "ARBEL?EZ"
+			replace `var' = "ANGULO" if `var' == "?NGULO"
+			replace `var' = "AVILA" if `var' == "?VILA"
+			replace `var' = "ALEGRIA" if `var' == "ALEGR?A"
+
+		}
+		
+	* gen tag for weird characters
+		foreach var in apellido1  {
+			gen tag_`var' = 0 
+			replace tag_`var' = 1 if strpos(`var', "Ã?") | strpos(`var', "Ã¿") | strpos(`var', "Ã`'") | strpos(`var', "Ã´") | strpos(`var', "Ã'")
+			bys document_id: egen max_tag_`var' = max(tag_`var')
+			br document_id year apellido1 apellido2 tag max_tag if max_tag == 1	
+			gen `var'_2 = `var' if tag_`var' == 0
+			bys document_id: egen `var'_3 = mode(`var'_2)
+			replace `var' = `var'_3 if !mi(`var'_3) & max_tag_`var' == 1
+			drop `var'_2 `var'_3 tag_`var' max_tag_`var'
+		}	
+		
+	* Manual corrections
+		foreach var in apellido1 apellido2 {		
+			* spaces
+				replace `var' = strtrim(`var')
+		}
+				
+		
 	* Save dataset
 		*export delimited using "Docentes 2008-2017/base_docentes.csv", replace	
 		save "Data/base_docentes_clean_2011_2017.dta", replace

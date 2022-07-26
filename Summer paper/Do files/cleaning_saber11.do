@@ -235,7 +235,7 @@ else {
 		replace father_educ = 0 if inlist(fami_educacionpadre, 4, 5, 6, 7, 8, 9)
 		
 	* Collapse by the school
-		collapse (mean) score_* male female strata_* father_educ mother_educ (count) N = score_global (first) cole_calendario, by(periodo cole_cod_dane_establecimiento)
+		collapse (mean) score_* male female strata_* father_educ mother_educ (count) N = score_global (first) cole_calendario cole_cod_mcpio_ubicacion, by(periodo cole_cod_dane_establecimiento)
 		rename cole_cod_dane_establecimiento school_code
 		drop if mi(school_code)
 		sort school_code periodo
@@ -272,6 +272,8 @@ else {
 	
 	*rename school_code school_code2
 	*tostring school_code2, gen(str20 school_code) force
+	
+	rename cole_cod_mcpio_ubicacion muni_code
 	
 	save "Data/SB11_2011_2017_school_level.dta", replace
 	
