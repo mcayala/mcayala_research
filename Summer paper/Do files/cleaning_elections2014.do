@@ -171,6 +171,7 @@ import delimited "Elegidos/Elegidos.txt", clear
 	drop _merge
 	 
 	 
+
 	gen year = 2016
 	 
 save "winners_2015.dta", replace

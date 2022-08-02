@@ -15,11 +15,23 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 	
 * Append winners elections 2015
 	append using "Data/Elecciones/2015/winners_2015"
-	
+		
 * Reshape	
 	bys muni_code: gen count = _n
 	reshape long apellido, i(muni_code count) j(no_apellido)
 	
+* Ñ and accents
+	foreach var in apellido {
+		replace `var' = upper(`var')
+		replace `var' = subinstr(`var', "Ñ", "N",.)
+		replace `var' = subinstr(`var', "Á", "A",.)
+		replace `var' = subinstr(`var', "É", "E",.)
+		replace `var' = subinstr(`var', "Í", "I",.)
+		replace `var' = subinstr(`var', "Ó", "O",.)
+		replace `var' = subinstr(`var', "Ú", "U",.)
+		replace `var' = strtrim(`var')
+	}	
+		
 * Drop duplicates in apellido
 	drop if mi(apellido)
 	
@@ -72,5 +84,6 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 	keep muni_code apellido year popular
 	isid muni_code apellido year
 	
+
 * Save council data
  save "Data/council_data_2012to2019", replace
