@@ -1,10 +1,11 @@
 cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
+global log "/Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files"
 *set scheme plotplainblind
 
-global date "2022-08-01"
+global date "2022-08-02"
 
 *log using "Log files/results_saber11_$date.smcl", replace
-log using "Log files/results_saber11_$date.log", replace
+log using "${log}/results_saber11_$date.log", replace
 
 *---------------------------------*
 * Variation within school-subject *
@@ -20,6 +21,7 @@ sum share*
 	reghdfe score share_connected_ty $controls1, absorb(year school_code)
 	reghdfe score share_connected_tby $controls1, absorb(year school_code)
 	reghdfe score share_connected_council $controls1, absorb(year school_code)
+	reghdfe score share_connected_council2 $controls1, absorb(year school_code)
 	
 * School - subject fixed effects
 	gen schoolxsubject = school_code*icfes_subject
@@ -41,6 +43,7 @@ sum connected_*
 reghdfe score connected_ty $controls, absorb(year document_id)
 reghdfe score connected_tby $controls, absorb(year document_id)
 reghdfe score connected_council $controls, absorb(year document_id)
+reghdfe score connected_council2 $controls, absorb(year document_id)
 
 
 log c

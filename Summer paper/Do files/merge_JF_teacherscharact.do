@@ -3,8 +3,8 @@
 * Purpose: This do file merges JF variable with other teachers' variables and test scores
 
 
-cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
-set scheme plotplainblind
+cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
+*set scheme plotplainblind
 
 * Open JF dataset with his variable
 
@@ -35,10 +35,11 @@ set scheme plotplainblind
 	rename school_code school_code2
 	destring school_code2, gen(double school_code) 
 	format school_code %16.0g
-	preserve
-
-* Merge Saber 11 test scores
-	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
+	
+* Merge muni_code
+	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta", keepus(muni_code) 
+	keep if _merge == 3
+	drop _merge
 	/*
 	    Result                      Number of obs
     -----------------------------------------
@@ -49,6 +50,44 @@ set scheme plotplainblind
     Matched                           525,099  (_merge==3)
     -----------------------------------------
 	*/
+	
+* Merge council names with apellido1
+	rename apellido1 apellido
+	merge m:1 year muni_code apellido using "Data/council_data_2012to2019"
+	/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                       573,434
+        from master                   467,710  (_merge==1)
+        from using                    105,724  (_merge==2)
+
+    Matched                            57,389  (_merge==3)
+    -----------------------------------------
+	*/
+	drop if _merge == 2
+	gen 	connected_council = .
+	replace connected_council = 1 if _merge == 3
+
+	gen 	connected_council2 = .
+	replace connected_council2 = 1 if _merge == 3 & popular == 0
+	drop _merge popular
+	rename apellido apellido1
+
+* Merge council names with apellido2
+	rename apellido2 apellido
+	merge m:1 year muni_code apellido using "Data/council_data_2012to2019"
+	
+	replace connected_council = 1 if _merge == 3 & mi(connected_council)
+	replace connected_council = 0 if mi(connected_council)
+	
+	replace connected_council2 = 1 if _merge == 3 & popular == 0
+	replace connected_council2 = 0 if mi(connected_council2)	
+	drop _merge popular
+	rename apellido apellido2
+	preserve
+
+* Merge Saber 11 test scores
+	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
 	keep if _merge == 3
 	
 * Save dataset
@@ -66,11 +105,13 @@ set scheme plotplainblind
 	* Collapse
 		br school_code year icfes_subject connected_ty connected_tby
 		gen N_teachers = 1
-		collapse (sum) connected_ty connected_tby N_teachers (mean) temporary female posgraduate, by(school_code year icfes_subject)
+		collapse (sum) connected_ty connected_tby connected_council connected_council2 N_teachers (mean) temporary female posgraduate, by(school_code year icfes_subject)
 	
 	* Gen shares
 		gen share_connected_ty = connected_ty/N_teachers
 		gen share_connected_tby = connected_tby/N_teachers
+		gen share_connected_council = connected_council/N_teachers
+		gen share_connected_council2 = connected_council2/N_teachers
 
 	* Merge Saber 11 test scores
 		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"	
