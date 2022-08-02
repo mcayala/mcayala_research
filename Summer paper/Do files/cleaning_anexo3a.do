@@ -3,7 +3,7 @@
 * Purpose: This do file cleans teachers dataset (Anexo 3a)
 
 * Set directory 
-	cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
+	cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 
 *------------------------*
 * Datasets 2011 and 2013 *

@@ -170,6 +170,13 @@ import delimited "Elegidos/Elegidos.txt", clear
 	keep if _merge == 3
 	drop _merge
 	 
+	 
+	gen year = 2016
+	 
+save "winners_2015.dta", replace
+-	 
+	 
+	 
 * Reshape	
 	bys muni_code: gen count = _n
 	reshape long apellido, i(muni_code count) j(no_apellido)
@@ -180,21 +187,6 @@ import delimited "Elegidos/Elegidos.txt", clear
 	sort muni_code apellido
 	isid muni_code apellido
 	
-* Extend data for all years
-	gen year = 2016
-	expand 2, gen(dupindicator)
-	replace year = 2017 if dupindicator == 1
-	drop dupindicator
-	
-	expand 2 if year == 2016, gen(dupindicator)
-	replace year = 2018 if dupindicator == 1
-	drop dupindicator
-
-	expand 2 if year == 2016, gen(dupindicator)
-	replace year = 2019 if dupindicator == 1
-	drop dupindicator
-	
-	tab year
 
 	
 save "winners_2015.dta", replace
