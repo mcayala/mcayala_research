@@ -28,9 +28,9 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	keep if teaching_level == 3 // secundaria
 	keep if !mi(icfes_subject) // only the subjects that are relevant for Saber 11
 	
-*----------------*
-* Merge Saber 11 *
-*----------------*	
+*-----------------*
+* Merge Muni code *
+*-----------------*	
 
 	rename school_code school_code2
 	destring school_code2, gen(double school_code) 
@@ -51,6 +51,10 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		-----------------------------------------
 	*/
 	
+*--------------------------*
+* Merge council last names *
+*--------------------------*		
+	
 * Merge council names with apellido1
 	rename apellido1 apellido
 	merge m:1 year muni_code apellido using "Data/council_data_2012to2019"
@@ -64,6 +68,8 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
     Matched                            80,024  (_merge==3)
     -----------------------------------------
 	*/
+	
+* Create connected variable
 	drop if _merge == 2
 	gen 	connected_council = .
 	replace connected_council = 1 if _merge == 3
@@ -85,8 +91,55 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	replace connected_council2 = 0 if mi(connected_council2)	
 	drop _merge popular
 	rename apellido apellido2
-	preserve
+	
+*-------------------------------------*
+* Merge principal/teachers last names *
+*-------------------------------------*	
+	
+* Merge names with apellido1
+	rename apellido1 apellido
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", assert(2 3) keepus(directivo principal n_apellido)
+	drop if _merge == 2
 
+* Gen connection var
+	br year school_code apellido directivo principal n_apellido
+	gen 	connected_teacher = .
+	replace connected_teacher = 1 if _merge == 3 & n_apellido > 1
+	
+	gen 	connected_principal = .
+	replace connected_principal = 1 if _merge == 3 & n_apellido > 1 & principal == 1
+	
+	gen 	connected_directivo = .
+	replace connected_directivo = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
+	
+	rename apellido apellido1	
+	drop _merge directivo principal n_apellido
+
+* Merge names with apellido1
+	rename apellido2 apellido
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", keepus(directivo principal n_apellido)
+	drop if _merge == 2
+
+* Gen connection var
+	replace connected_teacher = 1 if _merge == 3 & n_apellido > 1
+	replace connected_teacher = 0 if mi(connected_teacher)
+	
+	replace connected_principal = 1 if _merge == 3 & n_apellido > 1 & principal == 1
+	replace connected_principal = 0 if mi(connected_principal)
+	
+	replace connected_directivo = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
+	replace connected_directivo = 0 if mi(connected_directivo)
+	
+	rename apellido apellido2
+	drop _merge directivo principal n_apellido
+	
+	sum connected_*
+
+*----------------------*
+* Merge Saber11 scores *
+*----------------------*
+
+	preserve
 * Merge Saber 11 test scores
 	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
 	/*
@@ -116,16 +169,19 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	* Collapse
 		br school_code year icfes_subject connected_ty connected_tby
 		gen N_teachers = 1
-		collapse (sum) connected_ty connected_tby connected_council connected_council2 N_teachers (mean) temporary female posgraduate, by(school_code year icfes_subject)
+		collapse (sum) connected_* N_teachers (mean) temporary female posgraduate, by(school_code year icfes_subject)
 	
 	* Gen shares
 		gen share_connected_ty = connected_ty/N_teachers
 		gen share_connected_tby = connected_tby/N_teachers
 		gen share_connected_council = connected_council/N_teachers
 		gen share_connected_council2 = connected_council2/N_teachers
+		gen share_connected_principal = connected_principal/N_teachers
+		gen share_connected_directivo = connected_directivo/N_teachers
+		gen share_connected_teachers = connected_teacher/N_teachers
 
 	* Merge Saber 11 test scores
-		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta
+		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
 		/*
 			Result                      Number of obs
 			-----------------------------------------

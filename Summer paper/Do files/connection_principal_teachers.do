@@ -19,6 +19,14 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		
 	* Drop duplicates in apellido
 		drop if mi(apellido)
-		collapse (max) directivo principal, by(school_code year apellido)
+		br school_code year apellido directivo principal
+		sort school_code year apellido
+		gen n_apellido = 1
+		collapse (max) directivo principal (sum) n_apellido, by(school_code year apellido)
+		
+	* Make school_code numerical
+		rename school_code school_code2
+		destring school_code2, gen(double school_code) 
+		format school_code %16.0g
 		
 	save "Data/principal&teachers_lastnames", replace	
