@@ -331,6 +331,8 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 			replace `var' = subinstr(`var', "ó", "o",.)
 			replace `var' = subinstr(`var', "ú", "u",.)
 			replace `var' = subinstr(`var', "ü", "u",.)		
+			replace `var' = upper(`var')
+			di "end of loop"
 			}
 
 		foreach var in apellido1 apellido2 {
