@@ -309,7 +309,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 * Cleaning of last names *
 *------------------------*
 
-use "Data/base_docentes_clean_2011_2017.dta", clear
+*use "Data/base_docentes_clean_2011_2017.dta", clear
 
 	br year apellido1 apellido2 document_id
 	sort document_id apellido1 apellido2
@@ -323,7 +323,15 @@ use "Data/base_docentes_clean_2011_2017.dta", clear
 			replace `var' = subinstr(`var', "Í", "I",.)
 			replace `var' = subinstr(`var', "Ó", "O",.)
 			replace `var' = subinstr(`var', "Ú", "U",.)
-		}
+			replace `var' = subinstr(`var', "Ú", "U",.)
+			replace `var' = subinstr(`var', "ñ", "n",.)
+			replace `var' = subinstr(`var', "á", "a",.)
+			replace `var' = subinstr(`var', "é", "e",.)
+			replace `var' = subinstr(`var', "í", "i",.)
+			replace `var' = subinstr(`var', "ó", "o",.)
+			replace `var' = subinstr(`var', "ú", "u",.)
+			replace `var' = subinstr(`var', "ü", "u",.)		
+			}
 
 		foreach var in apellido1 apellido2 {
 			replace `var' = "ALVAREZ" if `var' == "?LVAREZ"
