@@ -17,8 +17,8 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 	append using "Data/Elecciones/2015/winners_2015"
 		
 * Reshape	
-	bys muni_code: gen count = _n
-	reshape long apellido, i(muni_code count) j(no_apellido)
+	bys muni_code year: gen count = _n
+	reshape long apellido, i(muni_code year count) j(no_apellido)
 	
 * Ñ and accents
 	foreach var in apellido {
@@ -29,6 +29,7 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 		replace `var' = subinstr(`var', "Í", "I",.)
 		replace `var' = subinstr(`var', "Ó", "O",.)
 		replace `var' = subinstr(`var', "Ú", "U",.)
+		replace `var' = subinstr(`var', "Ü", "U",.)
 		replace `var' = strtrim(`var')
 	}	
 		
@@ -41,18 +42,18 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 		collapse (count) n_lastname, by(apellido)
 		sort n_lastname
 		gen popular = 1 if n_lastname>=300
+		replace popular = 0 if mi(popular)
 		tempfile common
 		save	`common'
 	restore
 	
-	
-	duplicates drop muni_code apellido, force
-	sort muni_code apellido
-	isid muni_code apellido
+	duplicates drop muni_code year apellido, force
+	sort muni_code year apellido
+	isid muni_code year apellido
 	merge m:1 apellido using `common', assert(3)
-	replace popular = 0 if mi(popular)
 	
 * Extend data for all years
+	tab year
 	replace year = 2012 if year == 2011
 	expand 2 if year == 2012, gen(dupindicator)
 	replace year = 2013 if dupindicator == 1

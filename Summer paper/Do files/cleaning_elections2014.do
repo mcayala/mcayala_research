@@ -44,9 +44,10 @@ import delimited "Elegidos/Elegidos.txt", clear
 		replace `var' = subinstr(`var', "Í", "I",.)
 		replace `var' = subinstr(`var', "Ó", "O",.)
 		replace `var' = subinstr(`var', "Ú", "U",.)
+		replace `var' = subinstr(`var', "Ü", "U",.)
 	}
 	
-	* Fix some names	
+	* Fix municipalities names 
 	
 		* Antioquia
 		replace desc_mpio = "EL CARMEN DE VIBORAL" if desc_mpio == "CARMEN DE VIBORAL" & desc_depto == "ANTIOQUIA"
@@ -170,8 +171,6 @@ import delimited "Elegidos/Elegidos.txt", clear
 	keep if _merge == 3
 	drop _merge
 	 
-	 
-
 	gen year = 2016
 	 
 save "winners_2015.dta", replace
@@ -187,7 +186,6 @@ save "winners_2015.dta", replace
 	duplicates drop muni_code apellido, force
 	sort muni_code apellido
 	isid muni_code apellido
-	
 
 	
 save "winners_2015.dta", replace
