@@ -41,14 +41,14 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	keep if _merge == 3
 	drop _merge
 	/*
-	    Result                      Number of obs
-    -----------------------------------------
-    Not matched                       289,568
-        from master                   104,016  (_merge==1)
-        from using                    185,552  (_merge==2)
+		Result                      Number of obs
+		-----------------------------------------
+		Not matched                       168,000
+			from master                   104,263  (_merge==1)
+			from using                     63,737  (_merge==2)
 
-    Matched                           525,099  (_merge==3)
-    -----------------------------------------
+		Matched                           524,852  (_merge==3)
+		-----------------------------------------
 	*/
 	
 * Merge council names with apellido1
@@ -57,11 +57,11 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	/*
     Result                      Number of obs
     -----------------------------------------
-    Not matched                       573,434
-        from master                   467,710  (_merge==1)
-        from using                    105,724  (_merge==2)
+    Not matched                       575,501
+        from master                   444,828  (_merge==1)
+        from using                    130,673  (_merge==2)
 
-    Matched                            57,389  (_merge==3)
+    Matched                            80,024  (_merge==3)
     -----------------------------------------
 	*/
 	drop if _merge == 2
@@ -76,6 +76,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 * Merge council names with apellido2
 	rename apellido2 apellido
 	merge m:1 year muni_code apellido using "Data/council_data_2012to2019"
+	drop if _merge == 2
 	
 	replace connected_council = 1 if _merge == 3 & mi(connected_council)
 	replace connected_council = 0 if mi(connected_council)
@@ -88,6 +89,16 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 
 * Merge Saber 11 test scores
 	merge m:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"
+	/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                        63,737
+        from master                         0  (_merge==1)
+        from using                     63,737  (_merge==2)
+
+    Matched                           524,852  (_merge==3)
+    -----------------------------------------	
+	*/
 	keep if _merge == 3
 	
 * Save dataset
@@ -114,45 +125,19 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		gen share_connected_council2 = connected_council2/N_teachers
 
 	* Merge Saber 11 test scores
-		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"	
+		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta
 		/*
-			 Result                      Number of obs
+			Result                      Number of obs
 			-----------------------------------------
-			Not matched                       228,241
-				from master                    42,689  (_merge==1)
-				from using                    185,552  (_merge==2)
+			Not matched                        63,737
+				from master                         0  (_merge==1)
+				from using                     63,737  (_merge==2)
 
-			Matched                           160,576  (_merge==3)
+			Matched                           160,495  (_merge==3)
 			-----------------------------------------
+
 		*/
 		keep if _merge == 3
 	
 	* Save dataset
 		save "Data/school_subject_with_testscores_dataset.dta", replace
-	
-		
-/*	
-	
-	collapse (sum) n (mean) connected_ty connected_tby, by(codigo_dane year subject)
-
-	
-hist connected_ty, by(year) name(conected_hist, replace)	 percent
-
-hist connected_ty if connected_ty>0, by(year) name(conected_hist2, replace)	percent
-	
-* Concurso docente * 
-	
-use "/Volumes/Camila/Dropbox/Maestría/Tesis/Servidor/Saber 11/Datasets/concurso_docentes.dta", clear
-	
-rename num_doc document_id
-isid document_id
-keep document_id prom aprobo
-
-merge 1:m document_id using "Data/merge_JF_teachers_secundaria.dta"
-drop if _merge == 1
-tab year _merge
-tab connected_ty _merge, r
-
-	
-binscatter
- 
