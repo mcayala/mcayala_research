@@ -1,0 +1,253 @@
+----------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_family
+> conn_variation_2022-08-04.log
+  log type:  text
+ opened on:   4 Aug 2022, 14:37:10
+
+. 
+. use "Data/merge_JF_teachers_secundaria.dta", clear
+
+.  
+. global controls  "age type_contract"
+
+.  
+. sum connected_*
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+connected_ty |    524,852    .0027055    .0519443          0          1
+connected~by |    524,852    .0006364    .0252184          0          1
+connected~il |    524,852    .2666066    .4421854          0          1
+connected_~2 |    524,852     .157936    .3646813          0          1
+connected_~r |    524,852     .597458    .4904104          0          1
+-------------+---------------------------------------------------------
+connected~al |    524,852    .0239763    .1529754          0          1
+connected_~o |    524,852    .0900597    .2862675          0          1
+
+.  
+.         * Connected to public sector (JF)
+.         reghdfe std_score connected_ty $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      21.41
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0002
+                                                  Root MSE        =     0.2040
+
+-------------------------------------------------------------------------------
+    std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+ connected_ty |  -.0306183   .0100917    -3.03   0.002    -.0503977   -.0108389
+          age |    .000329   .0006053     0.54   0.587    -.0008574    .0015154
+type_contract |  -.0241171   .0032945    -7.32   0.000    -.0305743   -.0176599
+        _cons |   .0292624   .0282744     1.03   0.301    -.0261546    .0846794
+-------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+.         
+.         * Connected to top bureaucrat (JF)      
+.         reghdfe std_score connected_tby $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      20.15
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0002
+                                                  Root MSE        =     0.2040
+
+-------------------------------------------------------------------------------
+    std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------+----------------------------------------------------------------
+connected_tby |  -.0423371   .0181939    -2.33   0.020    -.0779966   -.0066777
+          age |   .0003277   .0006053     0.54   0.588    -.0008587    .0015141
+type_contract |  -.0242769   .0032937    -7.37   0.000    -.0307325   -.0178213
+        _cons |   .0295557   .0282743     1.05   0.296     -.025861    .0849725
+-------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+.         
+.         * Connected to a council member 
+.         reghdfe std_score connected_council $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      20.78
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0002
+                                                  Root MSE        =     0.2040
+
+-----------------------------------------------------------------------------------
+        std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+connected_council |   .0036624   .0013547     2.70   0.007     .0010071    .0063176
+              age |   .0003299   .0006053     0.55   0.586    -.0008565    .0015163
+    type_contract |  -.0243611   .0032935    -7.40   0.000    -.0308161    -.017906
+            _cons |   .0286118   .0282768     1.01   0.312    -.0268099    .0840334
+-----------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+. 
+.         * Connected to a council member - without common last names
+.         reghdfe std_score connected_council2 $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      18.35
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0001
+                                                  Root MSE        =     0.2040
+
+------------------------------------------------------------------------------------
+         std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+connected_council2 |   .0000524   .0016328     0.03   0.974    -.0031478    .0032526
+               age |   .0003291   .0006053     0.54   0.587    -.0008573    .0015155
+     type_contract |  -.0243749   .0032935    -7.40   0.000      -.03083   -.0179198
+             _cons |   .0296367   .0282764     1.05   0.295    -.0257843    .0850576
+------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+. 
+.         * Connected to the principal of the school
+.         reghdfe std_score connected_principal $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      19.10
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0001
+                                                  Root MSE        =     0.2040
+
+-------------------------------------------------------------------------------------
+          std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+connected_principal |  -.0054419     .00363    -1.50   0.134    -.0125566    .0016729
+                age |    .000331   .0006053     0.55   0.585    -.0008554    .0015174
+      type_contract |  -.0244027   .0032935    -7.41   0.000    -.0308579   -.0179475
+              _cons |   .0297411   .0282744     1.05   0.293     -.025676    .0851581
+-------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+. 
+.         * Connected to admin staff in the school (including principal)
+.         reghdfe std_score connected_directivo $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      21.94
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0002
+                                                  Root MSE        =     0.2040
+
+-------------------------------------------------------------------------------------
+          std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------------+----------------------------------------------------------------
+connected_directivo |   .0065153   .0019838     3.28   0.001     .0026271    .0104035
+                age |    .000326   .0006053     0.54   0.590    -.0008604    .0015124
+      type_contract |  -.0243363   .0032935    -7.39   0.000    -.0307914   -.0178812
+              _cons |   .0291321   .0282745     1.03   0.303     -.026285    .0845493
+-------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+. 
+.         * Connected to any other teacher in the school
+.         reghdfe std_score connected_teacher $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =     133.56
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8398
+                                                  Adj R-squared   =     0.7948
+                                                  Within R-sq.    =     0.0010
+                                                  Root MSE        =     0.2039
+
+-----------------------------------------------------------------------------------
+        std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+------------------+----------------------------------------------------------------
+connected_teacher |   .0250477   .0013473    18.59   0.000      .022407    .0276885
+              age |   .0003469   .0006051     0.57   0.566     -.000839    .0015328
+    type_contract |  -.0240408   .0032921    -7.30   0.000    -.0304931   -.0175884
+            _cons |   .0132609   .0282757     0.47   0.639    -.0421587    .0686804
+-----------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+.         
+.         
+. log c
+      name:  <unnamed>
+       log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_family
+> conn_variation_2022-08-04.log
+  log type:  text
+ closed on:   4 Aug 2022, 14:37:25
+----------------------------------------------------------------------------------------------------------
