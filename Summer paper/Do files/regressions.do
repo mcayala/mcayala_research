@@ -2,9 +2,8 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 global log "/Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files"
 *set scheme plotplainblind
 
-global date "2022-08-02"
+global date "2022-08-03"
 
-*log using "Log files/results_saber11_$date.smcl", replace
 log using "${log}/results_saber11_$date.log", replace
 
 *---------------------------------*
