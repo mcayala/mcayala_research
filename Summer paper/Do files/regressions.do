@@ -40,14 +40,17 @@ global fe "year school_code icfes_subject"
 	* Connected to the principal of the school
 	reghdfe std_score share_connected_principal $controls1, absorb(year school_code)
 	reghdfe std_score share_connected_principal $controls1, absorb($fe)
+	reghdfe std_score share_connected_principal2 $controls1, absorb($fe)
 	
 	* Connected to admin staff in the school (including principal)
 	reghdfe std_score share_connected_directivo $controls1, absorb(year school_code)
 	reghdfe std_score share_connected_directivo $controls1, absorb($fe)
+	reghdfe std_score share_connected_directivo2 $controls1, absorb($fe)
 	
 	* Connected to any other teacher in the school
-	reghdfe std_score share_connected_teacher $controls1, absorb(year school_code)
-	reghdfe std_score share_connected_teacher $controls1, absorb($fe)
+	reghdfe std_score share_connected_teachers $controls1, absorb(year school_code)
+	reghdfe std_score share_connected_teachers $controls1, absorb($fe)
+	reghdfe std_score share_connected_teachers2 $controls1, absorb($fe)
 	
 
 log c
@@ -81,12 +84,15 @@ sum connected_*
 
 	* Connected to the principal of the school
 	reghdfe std_score connected_principal $controls, absorb(year document_id)
+	reghdfe std_score connected_principal2 $controls, absorb(year document_id)
 
 	* Connected to admin staff in the school (including principal)
 	reghdfe std_score connected_directivo $controls, absorb(year document_id)
+	reghdfe std_score connected_directivo2 $controls, absorb(year document_id)
 
 	* Connected to any other teacher in the school
 	reghdfe std_score connected_teacher $controls, absorb(year document_id)
+	reghdfe std_score connected_teacher2 $controls, absorb(year document_id)
 	
 	
 log c

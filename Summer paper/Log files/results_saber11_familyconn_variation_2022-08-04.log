@@ -3,7 +3,7 @@
        log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_family
 > conn_variation_2022-08-04.log
   log type:  text
- opened on:   4 Aug 2022, 14:37:10
+ opened on:   4 Aug 2022, 15:12:48
 
 . 
 . use "Data/merge_JF_teachers_secundaria.dta", clear
@@ -19,11 +19,14 @@
 connected_ty |    524,852    .0027055    .0519443          0          1
 connected~by |    524,852    .0006364    .0252184          0          1
 connected~il |    524,852    .2666066    .4421854          0          1
-connected_~2 |    524,852     .157936    .3646813          0          1
+connecte~il2 |    524,852     .157936    .3646813          0          1
 connected_~r |    524,852     .597458    .4904104          0          1
 -------------+---------------------------------------------------------
 connected~al |    524,852    .0239763    .1529754          0          1
 connected_~o |    524,852    .0900597    .2862675          0          1
+connected~r2 |    524,852    .2091066     .406671          0          1
+connecte~al2 |    524,852    .0060455    .0775176          0          1
+connected~o2 |    524,852    .0219948    .1466664          0          1
 
 .  
 .         * Connected to public sector (JF)
@@ -180,6 +183,35 @@ Absorbed degrees of freedom:
  document_id |    110105           1      110104     |
 -----------------------------------------------------+
 
+.         reghdfe std_score connected_principal2 $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      18.72
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0001
+                                                  Root MSE        =     0.2040
+
+--------------------------------------------------------------------------------------
+           std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+connected_principal2 |  -.0078049   .0073804    -1.06   0.290    -.0222702    .0066605
+                 age |   .0003304   .0006053     0.55   0.585     -.000856    .0015168
+       type_contract |   -.024389   .0032935    -7.41   0.000    -.0308442   -.0179338
+               _cons |   .0296576   .0282744     1.05   0.294    -.0257594    .0850746
+--------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
 . 
 .         * Connected to admin staff in the school (including principal)
 .         reghdfe std_score connected_directivo $controls, absorb(year document_id)
@@ -202,6 +234,35 @@ connected_directivo |   .0065153   .0019838     3.28   0.001     .0026271    .01
       type_contract |  -.0243363   .0032935    -7.39   0.000    -.0307914   -.0178812
               _cons |   .0291321   .0282745     1.03   0.303     -.026285    .0845493
 -------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
+.         reghdfe std_score connected_directivo2 $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      18.59
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8397
+                                                  Adj R-squared   =     0.7946
+                                                  Within R-sq.    =     0.0001
+                                                  Root MSE        =     0.2040
+
+--------------------------------------------------------------------------------------
+           std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+connected_directivo2 |   .0033974   .0039813     0.85   0.393    -.0044058    .0112006
+                 age |   .0003292   .0006053     0.54   0.587    -.0008572    .0015156
+       type_contract |  -.0243702   .0032935    -7.40   0.000    -.0308254   -.0179151
+               _cons |    .029557   .0282746     1.05   0.296    -.0258605    .0849744
+--------------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
 -----------------------------------------------------+
@@ -242,6 +303,35 @@ Absorbed degrees of freedom:
  document_id |    110105           1      110104     |
 -----------------------------------------------------+
 
+.         reghdfe std_score connected_teacher2 $controls, absorb(year document_id)
+(dropped 22953 singleton observations)
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =    501,822
+Absorbing 2 HDFE groups                           F(   3, 391709) =      68.86
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.8398
+                                                  Adj R-squared   =     0.7947
+                                                  Within R-sq.    =     0.0005
+                                                  Root MSE        =     0.2039
+
+------------------------------------------------------------------------------------
+         std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------------+----------------------------------------------------------------
+connected_teacher2 |   .0228987   .0018603    12.31   0.000     .0192525     .026545
+               age |   .0003406   .0006052     0.56   0.574    -.0008456    .0015268
+     type_contract |  -.0241266   .0032929    -7.33   0.000    -.0305807   -.0176726
+             _cons |    .023875   .0282729     0.84   0.398     -.031539     .079289
+------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |         6           0           6     |
+ document_id |    110105           1      110104     |
+-----------------------------------------------------+
+
 .         
 .         
 . log c
@@ -249,5 +339,5 @@ Absorbed degrees of freedom:
        log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_family
 > conn_variation_2022-08-04.log
   log type:  text
- closed on:   4 Aug 2022, 14:37:25
+ closed on:   4 Aug 2022, 15:13:08
 ----------------------------------------------------------------------------------------------------------

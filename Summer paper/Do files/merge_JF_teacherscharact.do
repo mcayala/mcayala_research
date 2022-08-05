@@ -98,7 +98,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	
 * Merge names with apellido1
 	rename apellido1 apellido
-	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", assert(2 3) keepus(directivo principal n_apellido)
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", assert(2 3) keepus(directivo principal n_apellido popular)
 	drop if _merge == 2
 
 * Gen connection var
@@ -112,12 +112,22 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	gen 	connected_directivo = .
 	replace connected_directivo = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
 	
+* Taking out popular last names
+	gen 	connected_teacher2 = connected_teacher
+	replace connected_teacher2 = 0 if popular == 1
+	
+	gen 	connected_principal2 = connected_principal
+	replace connected_principal2 = 0 if popular == 1
+	
+	gen 	connected_directivo2 = connected_directivo
+	replace connected_directivo2 = 0 if popular == 1
+	
 	rename apellido apellido1	
-	drop _merge directivo principal n_apellido
+	drop _merge directivo principal n_apellido popular
 
 * Merge names with apellido1
 	rename apellido2 apellido
-	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", keepus(directivo principal n_apellido)
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", keepus(directivo principal n_apellido popular)
 	drop if _merge == 2
 
 * Gen connection var
@@ -129,6 +139,17 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	
 	replace connected_directivo = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
 	replace connected_directivo = 0 if mi(connected_directivo)
+	
+* Taking out popular last names
+	replace connected_teacher2 = 0 if popular == 1
+	replace connected_teacher2 = 0 if mi(connected_teacher2)
+	
+	replace connected_principal2 = 0 if popular == 1
+	replace connected_principal2 = 0 if mi(connected_principal2)
+	
+	replace connected_directivo2 = 0 if popular == 1	
+	replace connected_directivo2 = 0 if mi(connected_directivo2)
+	
 	
 	rename apellido apellido2
 	drop _merge directivo principal n_apellido
@@ -177,8 +198,11 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		gen share_connected_council = connected_council/N_teachers
 		gen share_connected_council2 = connected_council2/N_teachers
 		gen share_connected_principal = connected_principal/N_teachers
+		gen share_connected_principal2 = connected_principal2/N_teachers
 		gen share_connected_directivo = connected_directivo/N_teachers
+		gen share_connected_directivo2 = connected_directivo2/N_teachers
 		gen share_connected_teachers = connected_teacher/N_teachers
+		gen share_connected_teachers2 = connected_teacher2/N_teachers
 
 	* Merge Saber 11 test scores
 		merge 1:1 school_code year icfes_subject using "Data/SB11_2011_2017_school_level.dta"

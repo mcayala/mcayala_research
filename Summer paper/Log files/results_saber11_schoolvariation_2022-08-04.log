@@ -3,7 +3,7 @@
        log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_school
 > variation_2022-08-04.log
   log type:  text
- opened on:   4 Aug 2022, 14:37:03
+ opened on:   4 Aug 2022, 15:12:38
 
 . 
 . use "Data/school_subject_with_testscores_dataset.dta", clear
@@ -19,11 +19,14 @@
 share_con~ty |    160,495    .0024811    .0355011          0          1
 share_con~by |    160,495    .0006156    .0173496          0          1
 share_con~il |    160,495     .247786    .3145706          0          1
-share_conn~2 |    160,495    .1525008    .2617308          0          1
+share_co~il2 |    160,495    .1525008    .2617308          0          1
 share_con~al |    160,495    .0255305    .1170758          0          1
 -------------+---------------------------------------------------------
+share_co~al2 |    160,495    .0067148    .0611316          0          1
 share_conn~o |    160,495    .0732547    .1771296          0          1
+share_con~o2 |    160,495    .0190073    .0927126          0          1
 share_conn~s |    160,495    .5248658    .3743177          0          1
+share_con~s2 |    160,495     .179761    .2682592          0          1
 
 . 
 . global fe "year school_code icfes_subject"
@@ -350,6 +353,38 @@ Absorbed degrees of freedom:
 -------------------------------------------------------+
 ? = number of redundant parameters may be higher
 
+.         reghdfe std_score share_connected_principal2 $controls1, absorb($fe)
+(dropped 25 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =    160,470
+Absorbing 3 HDFE groups                           F(   4, 154131) =      59.49
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.7942
+                                                  Adj R-squared   =     0.7858
+                                                  Within R-sq.    =     0.0015
+                                                  Root MSE        =     0.2096
+
+--------------------------------------------------------------------------------------------
+                 std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+share_connected_principal2 |    .003469   .0094195     0.37   0.713    -.0149931     .021931
+                 temporary |   -.016674   .0020474    -8.14   0.000    -.0206868   -.0126612
+                    female |   .0103319   .0016644     6.21   0.000     .0070696    .0135941
+               posgraduate |   .0177621   .0019206     9.25   0.000     .0139978    .0215264
+                     _cons |  -.1117164   .0013501   -82.75   0.000    -.1143626   -.1090702
+--------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-------------------------------------------------------+
+   Absorbed FE | Categories  - Redundant  = Num. Coefs |
+---------------+---------------------------------------|
+          year |         6           0           6     |
+   school_code |      6326           1        6325     |
+ icfes_subject |         5           1           4    ?|
+-------------------------------------------------------+
+? = number of redundant parameters may be higher
+
 .         
 .         * Connected to admin staff in the school (including principal)
 .         reghdfe std_score share_connected_directivo $controls1, absorb(year school_code)
@@ -414,9 +449,41 @@ Absorbed degrees of freedom:
 -------------------------------------------------------+
 ? = number of redundant parameters may be higher
 
+.         reghdfe std_score share_connected_directivo2 $controls1, absorb($fe)
+(dropped 25 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =    160,470
+Absorbing 3 HDFE groups                           F(   4, 154131) =      60.58
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.7942
+                                                  Adj R-squared   =     0.7858
+                                                  Within R-sq.    =     0.0016
+                                                  Root MSE        =     0.2096
+
+--------------------------------------------------------------------------------------------
+                 std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------------+----------------------------------------------------------------
+share_connected_directivo2 |  -.0132968   .0062504    -2.13   0.033    -.0255474   -.0010462
+                 temporary |  -.0167254   .0020473    -8.17   0.000    -.0207381   -.0127127
+                    female |   .0103166   .0016644     6.20   0.000     .0070543    .0135788
+               posgraduate |   .0177648   .0019206     9.25   0.000     .0140005    .0215291
+                     _cons |    -.11142   .0013545   -82.26   0.000    -.1140748   -.1087652
+--------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-------------------------------------------------------+
+   Absorbed FE | Categories  - Redundant  = Num. Coefs |
+---------------+---------------------------------------|
+          year |         6           0           6     |
+   school_code |      6326           1        6325     |
+ icfes_subject |         5           1           4    ?|
+-------------------------------------------------------+
+? = number of redundant parameters may be higher
+
 .         
 .         * Connected to any other teacher in the school
-.         reghdfe std_score share_connected_teacher $controls1, absorb(year school_code)
+.         reghdfe std_score share_connected_teachers $controls1, absorb(year school_code)
 (dropped 25 singleton observations)
 (MWFE estimator converged in 5 iterations)
 
@@ -446,7 +513,7 @@ Absorbed degrees of freedom:
  school_code |      6326           1        6325     |
 -----------------------------------------------------+
 
-.         reghdfe std_score share_connected_teacher $controls1, absorb($fe)
+.         reghdfe std_score share_connected_teachers $controls1, absorb($fe)
 (dropped 25 singleton observations)
 (MWFE estimator converged in 5 iterations)
 
@@ -478,6 +545,38 @@ Absorbed degrees of freedom:
 -------------------------------------------------------+
 ? = number of redundant parameters may be higher
 
+.         reghdfe std_score share_connected_teachers2 $controls1, absorb($fe)
+(dropped 25 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =    160,470
+Absorbing 3 HDFE groups                           F(   4, 154131) =      59.70
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.7942
+                                                  Adj R-squared   =     0.7858
+                                                  Within R-sq.    =     0.0015
+                                                  Root MSE        =     0.2096
+
+-------------------------------------------------------------------------------------------
+                std_score | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+--------------------------+----------------------------------------------------------------
+share_connected_teachers2 |   .0022137   .0022362     0.99   0.322    -.0021692    .0065966
+                temporary |  -.0166462   .0020476    -8.13   0.000    -.0206594    -.012633
+                   female |   .0103125   .0016646     6.20   0.000     .0070501     .013575
+              posgraduate |   .0177355   .0019208     9.23   0.000     .0139708    .0215002
+                    _cons |  -.1120785   .0014039   -79.83   0.000    -.1148301   -.1093269
+-------------------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-------------------------------------------------------+
+   Absorbed FE | Categories  - Redundant  = Num. Coefs |
+---------------+---------------------------------------|
+          year |         6           0           6     |
+   school_code |      6326           1        6325     |
+ icfes_subject |         5           1           4    ?|
+-------------------------------------------------------+
+? = number of redundant parameters may be higher
+
 .         
 . 
 . log c
@@ -485,5 +584,5 @@ Absorbed degrees of freedom:
        log:  /Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log files/results_saber11_school
 > variation_2022-08-04.log
   log type:  text
- closed on:   4 Aug 2022, 14:37:10
+ closed on:   4 Aug 2022, 15:12:48
 ----------------------------------------------------------------------------------------------------------
