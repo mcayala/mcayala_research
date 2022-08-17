@@ -82,9 +82,8 @@ use "Data/Elecciones/2011/Concejo_2011_Corregida.dta", clear
 	
 	tab year
 	
-	keep muni_code apellido year popular
+	keep muni_code apellido year
 	isid muni_code apellido year
-	
 
 * Save council data
  save "Data/council_data_2012to2019", replace
