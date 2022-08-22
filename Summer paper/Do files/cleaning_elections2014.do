@@ -45,7 +45,6 @@ import delimited "Elegidos/Elegidos.txt", clear
 		replace `var' = subinstr(`var', "Ó", "O",.)
 		replace `var' = subinstr(`var', "Ú", "U",.)
 		replace `var' = subinstr(`var', "Ü", "U",.)
-		replace `var' = strtrim(`var') // no trailing or leading blanks
 	}
 	
 	* Fix municipalities names 
