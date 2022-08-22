@@ -508,7 +508,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		replace apellido2 = mode_apellido2 if apellido2 != mode_apellido2 & !mi(mode_apellido2)
 		drop mode_apellido2
 		
-	* For the remaining ones, we just pick one randomly. Mostly it's because changes in S/Z
+	* For the remaining ones, we just pick one randomly. Mostly it's because mispellings in S/Z
 		bys document_id (apellido1): gen diff = apellido1[1] != apellido1[_N] 		
 		br document_id apellido1 apellido2 if diff == 1
 		set seed 12345
@@ -571,7 +571,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 					Result                      Number of obs
 			-----------------------------------------
 			Not matched                        47,001
-				from master                    43,816  (_merge==1) // empty last name
+				from master                    43,816  (_merge==1) // these are the one with empty last name 2
 				from using                      3,185  (_merge==2)
 
 			Matched                         2,158,947  (_merge==3)
