@@ -10,6 +10,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		reshape long apellido, i(school_code year document_id) j(no_apellido)
 		br school_code year document_id apellido position nombre_cargo
 		sort school_code year document_id 
+		duplicates drop school_code year document_id apellido, force // to not count people with the same two last names twice
 		
 	* gen indicator for Directivo docentes: coordinador, director de nucleo, director rural
 		gen directivo = (position == 2)
@@ -24,7 +25,9 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		br school_code year apellido directivo principal
 		sort school_code year apellido
 		gen n_apellido = 1
-		collapse (max) directivo principal (sum) n_apellido, by(school_code year apellido)
+		gen n_apellido_directivo = directivo
+		gen n_apellido_principal = principal
+		collapse (max) directivo principal (sum) n_apellido n_apellido_directivo n_apellido_principal, by(school_code year apellido)
 	
 	* Make school_code numerical
 		rename school_code school_code2
@@ -32,3 +35,4 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		format school_code %16.0g
 		
 	save "Data/principal&teachers_lastnames", replace	
+
