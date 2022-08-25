@@ -3,11 +3,15 @@
 * Purpose: This do file cleans teachers dataset (Anexo 3a)
 
 * Set directory 
-	cd "/Volumes/Camila/Dropbox/PhD/Second year/Summer paper"
+	cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 
 *------------------------*
 * Datasets 2011 and 2013 *
 *------------------------*
+
+*------*
+* 2013 *
+*------*
 
 * These ones need to be cleaned separately because codigo_dane or teacher ID was wrong in the complete dataset	
 	
@@ -34,8 +38,10 @@
 	tempfile docentes13
 	save	`docentes13'		
 	
-* 2013
-	import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
+*------*
+* 2011 *
+*------*	
+import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 	gen year = 2011
 	
 	* Drop if missing nro_documento
@@ -58,6 +64,32 @@
 	tempfile docentes11
 	save	`docentes11'
 	
+*------*
+* 2012 *
+*------*
+	import delimited "Anexo 3a/BASE_DOCENTES_2012.csv", clear stringcols(_all)
+	gen year = 2012
+	
+	* Drop if missing nro_documento
+		rename num_doc nro_documento
+		drop if nro_documento == " " // 1 obs deleted
+		
+	* Rename variables for merge
+		rename area_ensenanza area_ensenanza_nombrado
+		rename area_ensenanza_tec area_ensenanza_tecnica
+		rename ultimo_nivel_educativo nivel_educativo_aprobado
+		rename tipo_doc tipo_documento
+	
+	* Day of birth
+		split fecha_nacimiento, p("/")
+		tab fecha_nacimiento3
+		destring fecha_nacimiento3, replace
+		gen edad = 2012 - fecha_nacimiento3	
+	
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
+	tempfile docentes12
+	save	`docentes12'	
+	
 *----------------------*
 * Dataset 2012 to 2017 *
 *----------------------*	
@@ -68,6 +100,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		sort nro_documento
 		tab anno_inf if nro_documento == " " // its 2013, that's why we copy 
 		drop if nro_documento == " " 
+		drop if anno_inf == 2012
 		
 	* Check codigo_dane and nro_documento
 		br anno_inf nro_documento codigo_dane codigo_sed
@@ -83,6 +116,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 	
 	* Append date for 2011 and 2013
 		append using `docentes11'
+		append using `docentes12'
 		append using `docentes13'
 	
 	* Check missings
@@ -256,8 +290,305 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		order document_id
 		drop document_id2
 	
+*----------------------------*
+* For merge with test scores *
+*----------------------------*	
+	
+	* Gen relevant areas
+		gen 	subject_icfes = .
+		lab def subject_icfes_l 1 "Lectura critica" 2 "Matematicas" 3 "Ciencias naturales" 4 "Sociales y ciudadanas" 5 "Ingles"
+		replace subject_icfes = 1 if inlist(subject, 12, 19)
+		replace subject_icfes = 2 if inlist(subject, 15)
+		replace subject_icfes = 3 if inlist(subject, 3, 17, 18)
+		replace subject_icfes = 4 if inlist(subject, 4)
+		replace subject_icfes = 5 if inlist(subject, 14)
+		lab val subject_icfes subject_icfes_l
+		rename subject_icfes icfes_subject
+		
+*------------------------*
+* Cleaning of last names *
+*------------------------*
+
+	br year apellido1 apellido2 document_id
+	sort document_id apellido1 apellido2
+	
+	* Ñ and accents
+		foreach var in apellido1 apellido2 {
+			replace `var' = upper(`var')
+			replace `var' = strupper(`var')
+			replace `var' = subinstr(`var', "Ñ", "N",.)
+			replace `var' = subinstr(`var', "Á", "A",.)
+			replace `var' = subinstr(`var', "É", "E",.)
+			replace `var' = subinstr(`var', "Í", "I",.)
+			replace `var' = subinstr(`var', "Ó", "O",.)
+			replace `var' = subinstr(`var', "Ú", "U",.)
+			replace `var' = subinstr(`var', "Ü", "U",.)
+			replace `var' = subinstr(`var', "ñ", "n",.)
+			replace `var' = subinstr(`var', "á", "a",.)
+			replace `var' = subinstr(`var', "é", "e",.)
+			replace `var' = subinstr(`var', "í", "i",.)
+			replace `var' = subinstr(`var', "ó", "o",.)
+			replace `var' = subinstr(`var', "ú", "u",.)
+			replace `var' = subinstr(`var', "ü", "u",.)		
+			replace `var' = upper(`var')
+			replace `var' = strtrim(`var') // no trailing or leading blanks
+			replace `var' = stritrim(`var') // no more than one space
+			replace `var' = subinstr(`var',"CAT_", "", .)
+			}
+			
+	* Replace the mode for those whose has different spellings
+		br document_id apellido1 
+		bys document_id: egen mode_apellido1 = mode(apellido1)
+		replace apellido1 = mode_apellido1 if apellido1 != mode_apellido1 & !mi(mode_apellido1)
+		drop mode_apellido1
+		
+		br document_id apellido2
+		bys document_id: egen mode_apellido2 = mode(apellido2)
+		replace apellido2 = mode_apellido2 if apellido2 != mode_apellido2 & !mi(mode_apellido2)
+		drop mode_apellido2
+		
+		foreach var in apellido1 apellido2 {
+			replace `var' = "ALVAREZ" if `var' == "?LVAREZ"
+			replace `var' = "ARBELAEZ" if inlist(`var', "ARBEL?EZ", "ARBELÃEZ")
+			replace `var' = "ANGULO" if `var' == "?NGULO"
+			replace `var' = "AVILA" if `var' == "?VILA"
+			replace `var' = "ALEGRIA" if `var' == "ALEGR?A"
+			replace `var' = "ESTUPINAN" if `var' == "ESTUPIÃ?AN"
+			replace `var' = "AVENDANO" if `var' == "AVENDAÃ¿O"
+			replace `var' = "CASTANO" if `var' == "CASTA?O"
+			replace `var' = "DIAZ" if `var' == "D?AZ" |	 `var' == "DÃAZ"
+			replace `var' = "MONTANA" if `var' == "MONTAÃ?A"
+			replace `var' = "ZUNIGA" if inlist(`var', "ZUÃ?IGA", "ZUÃ¿IGA", "ZUÃ?INGA", "ZUÃ`IGA", "ZUÏ¿½IGA", "ZUÐIGA", "ZÃ?Ã?IGA")
+			replace `var' = "ORDONEZ" if inlist(`var', "ORDOÃ?EZ", "ORDOÃ¿EZ")
+			replace `var' = "MUNOZ" if inlist(`var', "MUÃ?OZ", "MUÃ¿OZ", "MU OZ")
+			replace `var' = "CASTANEDA" if inlist(`var', "CASTAÃ?EDA", "CASTAÃ¿EDA")
+			replace `var' = "QUINONEZ" if inlist(`var', "QUIÃ?ONEZ", "QUIÃ`ONEZ")
+			replace `var' = "QUINONES" if inlist(`var', "QUIÃ¿ONES")
+			replace `var' = "ACUNA" if inlist(`var', "ACU?A", "ACU¤A", "ACU¥A", "ACU¾A", "ACU A", "ACUÃ")
+			replace `var' = "ACUNA" if inlist(`var', "ACUÃ?A", "ACUÃ?Â?", "ACUÃ?Â¿", "ACUÃ¿", "ACUÃ¿A")
+			replace `var' = "ACUNA" if inlist(`var', "ACUÃ¿Â¿", "ACUÃ`A", "ACUÃ±A", "ACUðA", "ACUÐA", "ACUÃ", "ACUÃ`A")
+			replace `var' = "ZUNIGA" if inlist(`var', "ZUÃ?IGA", "ZUÃ¿IGA", "ZUÃ?INGA", "ZUÃ`IGA", "ZUÏ¿½IGA", "ZUÐIGA", "ZÃ?Ã?IGA", "ZUÃ'IGA")
+			replace `var' = "ALBANIL" if inlist(`var', "ALBAÃ?IL", "ALBAÃ¿IL")
+			replace `var' = "ALCALA" if inlist(`var', "ALCAL?", "ALCALÃ")
+			replace `var' = "ALBAN" if inlist(`var', "ALBÃN")
+			replace `var' = "BETANCOURT" if inlist(`var', "BETACOURT", "BETACOURTH", "BETAMCUR", "BETANCOOUR")
+			replace `var' = "BETANCOURT" if inlist(`var', "BETANCORTH", "BETANCOUR", "BETANCOURH", "BETANCOURT")
+			replace `var' = "BETANCOURT" if inlist(`var', "BETANCOURTH", "BETANCOURTT", "BETANCU", "BETANCUOR")
+			replace `var' = "BETANCOURT" if inlist(`var', "BETANCUORT", "BETANCUR", "BETANCURT", "BETANCURTH", "BETANCUTR", "BETENCOURT", "BETENCOURTH")
+			replace `var' = "BOHORQUEZ" if inlist(`var', "BOHORGUEZ", "BOHORQUES", "BOHORQUE", "BOHÃ?RQUEZ")
+			replace `var' = "BOLANOS" if inlist(`var', "BOLA OS", "BOLANOS", "BOLANOZ", "BOLAÃ?OS", "BOLAÃ?OZ")
+			replace `var' = "BOLANOS" if inlist(`var', "BOLAÃ¿OS", "BOLAÃ¿OZ", "BOLAÃ`OS", "BOLAÃ`OS")
+			replace `var' = "BOLANO" if inlist(`var', "BOLA O", "BOLA?O", "BOLA¥O", "BOLA¾O", "BOLAÃ?O", "BOLAÃ?Â?", "BOLAÃ?Â¿", "BOLAÃ¿", "BOLAÃ¿O")
+			replace `var' = "BOLANO" if inlist(`var', "BOLAÃ¿Â¿", "BOLAÃ`O")
+			replace `var' = "BRICENO" if inlist(`var', "BRICE¤O","BRICEÃ?O", "BRICEÃ¿O", "BRICEÃ`O")
+			replace `var' = "PINEROS" if inlist(`var', "PIÃ¿EROS","PIÃ?EROS", "BRICEÃ¿O", "PIÃ`EROS")
+			replace `var' = "IBANEZ" if inlist(`var', "IBAÃ?EZ")
+			replace `var' = "CANON" if inlist(`var', "CAÃ?ON", "CAÃ¿ON", "CAÃ`ON")
+			replace `var' = "CANAVERAL" if inlist(`var', "CAÃ¿AVERAL", "CAÃ?AVERAL")
+			replace `var' = "CANIZALES" if inlist(`var', "CAÃ¿IZALES", "CAÃ`IZALES")
+			replace `var' = "CANIZALEZ" if inlist(`var', "CAÃ¿IZALEZ", "CAÃ`IZALEZ")
+			replace `var' = "AMAGUANA" if inlist(`var', "AMAGUAÃ?A")
+			replace `var' = "AVENDANO" if inlist(`var', "AVENDA O", "AVENDAÃ?O", "AVENDAÃ?O", "AVENDAÃ¿Â¿", "AVENDAÃ?Â?", "AVENDAÃ", "AVENDAÃ`O")
+			replace `var' = "BAMBAGUE" if inlist(`var', "BAMBAG E", "BAMBACUE", "BAMBAGÃ?E", "BAMBAGUI", "BAMBAGÃ¿E", "BAMBAGÜE")
+			replace `var' = "PATINO" if inlist(`var', "PATIN O", "PATIÃ`O", "PATIÃ?O", "PATIÃ¿O")
+			replace `var' = "CANAVERAL" if inlist(`var', "CA AVERAL")
+			replace `var' = "CASTANEDA" if inlist(`var', "CASTA EDA")
+			replace `var' = "CASTANO" if inlist(`var', "CASTA O")
+			replace `var' = "CATANO" if inlist(`var', "CATA O")
+			replace `var' = "BENAVIDES" if inlist(`var', "BENAVIDES.")
+			replace `var' = "BENAVIDES" if inlist(`var', "BENAVIDES.", "BENANIDES", "BENAVIVES", "BENEVIDES")
+			replace `var' = "BENITOREVOLLO" if inlist(`var', "BENITO REBOLLO", "BENITO REVO", "BENITOREBOLLO", "BENITO REVOLLO")
+			replace `var' = subinstr(`var',".", "", .)
+			replace `var' = subinstr(`var',"PEÃ¿", "PENA", .)
+			replace `var' = subinstr(`var',"PEÃ?A", "PENA", .)
+			replace `var' = subinstr(`var',"PEÃ?", "PENA", .)
+			replace `var' = subinstr(`var',"PENAÂ¿", "PENA", .)
+			replace `var' = subinstr(`var',"PEÃ`A", "PENA", .)
+			replace `var' = subinstr(`var',"PENAA", "PENA", .)
+			replace `var' = subinstr(`var',"MONTAÃ?EZ", "MONTANEZ", .)
+			replace `var' = subinstr(`var',"MONTAÃ¿EZ", "MONTANEZ", .)
+			replace `var' = subinstr(`var',"MONTAÃ`EZ", "MONTANEZ", .)
+			replace `var' = subinstr(`var',"MONTAÏEZ", "MONTANEZ", .)
+			replace `var' = subinstr(`var',"MONTAÃ?O", "MONTANO", .)
+			replace `var' = subinstr(`var',"MONTAÃ¿O", "MONTANO", .)
+			replace `var' = subinstr(`var',"MONTAÃ`O", "MONTANO", .)
+			replace `var' = subinstr(`var',"MONTAÃ`A", "MONTANA", .)
+			replace `var' = subinstr(`var',"MONTAÃ?Â?", "MONTANA", .)
+			replace `var' = subinstr(`var',"Ã?", "N", .)
+			replace `var' = "PERINAN" if inlist(`var', "PERIÃ?AN", "PERIÃ¿AN", "PERIÃ`A", "PERIÃ`AN")
+			replace `var' = "QUINONES" if inlist(`var', "QUIÃ?ONES", "QUIÃ±ONES", "QUIÃ`ONES")
+			replace `var' = "QUINONEZ" if inlist(`var', "QUIÃ¿ONEZ")
+			replace `var' = "POSADA" if inlist(`var', "POSADA ")
+			replace `var' = "MARINO" if inlist(`var', "MARIÃ?O","MARIÃ¿O")
+			replace `var' = "LAMBRANO" if inlist(`var', "LAMBRAÃ?O", "LAMBRAÃ¿O", "LAMBRAÃ`O")
+			replace `var' = "DE AGUALIMPIA" if inlist(`var', "DEAGUALIMPIA", "DE AGUALIMP", "DE AGUALIM")
+			replace `var' = "DE LA PUENTE" if inlist(`var', "DE DE LA PU", "DE DE LA PUENTE", "DELAPUENTE")
+			replace `var' = "DE VELASQUEZ" if inlist(`var', "DE VELASQU", "DE VELASQUE")
+			replace `var' = "DE LA ESPRIELLA" if inlist(`var', "DELA ESPRI", "DELA ESPRIE", "DELA ESPRIELLA")
+			replace `var' = subinstr(`var',"Ã?", "N", .)
+			replace `var' = subinstr(`var',"Ã¿", "N", .)
+			}
+	
+	* Replace the mode for those whose has different spellings
+		br document_id apellido1 
+		bys document_id: egen mode_apellido1 = mode(apellido1)
+		replace apellido1 = mode_apellido1 if apellido1 != mode_apellido1 & !mi(mode_apellido1)
+		drop mode_apellido1
+		
+		br document_id apellido2
+		bys document_id: egen mode_apellido2 = mode(apellido2)
+		replace apellido2 = mode_apellido2 if apellido2 != mode_apellido2 & !mi(mode_apellido2)
+		drop mode_apellido2
+	
+	/* Check last names that have more than one last name
+		mdesc apellido1 apellido2
+		gen words_1 = wordcount(apellido1)
+		br document_id apellido1 apellido2 if words_1 > 1
+		gen contains_de = (strpos(apellido1, "DE"))
+		*/
+	
+		
+	* gen tag for weird characters
+		foreach var in apellido1 apellido2  { //
+			gen tag_`var' = 0 
+			replace tag_`var' = 1 if strpos(`var', "Ã?") | strpos(`var', "Ã¿") | strpos(`var', "Ã`'") | strpos(`var', "Ã´") | strpos(`var', "Ã'")
+			replace tag_`var' = 1 if strpos(`var', "?") | strpos(`var', "¿") | strpos(`var', "´") | strpos(`var', "'")
+			bys document_id: egen max_tag_`var' = max(tag_`var')
+			br document_id year apellido1 apellido2 tag max_tag if max_tag == 1	
+			gen `var'_2 = `var' if tag_`var' == 0
+			bys document_id: egen `var'_3 = mode(`var'_2)
+			replace `var' = `var'_3 if !mi(`var'_3) & max_tag_`var' == 1
+			drop `var'_2 `var'_3 tag_`var' max_tag_`var'
+		}		
+		
+
+				
+	* Fixing the last names that have different spellings for the same person
+		bys document_id (apellido1): gen diff = apellido1[1] != apellido1[_N] 		
+		br document_id apellido1 apellido2 if diff == 1
+		gen a = strpos(apellido1, apellido2)
+		replace apellido1 = subinstr(apellido1,apellido2, "", .) if a > 1 & diff == 1
+		drop a
+		gen a = strpos(apellido1, " DE")
+		gen length = strlen(apellido1)
+		replace apellido1 = subinstr(apellido1, " DE", "", .) if length-a==2
+		gen b = strpos(apellido1, " D")
+		replace apellido1 = subinstr(apellido1, " D", "", .) if length-b==1	
+		drop a b
+		bys document_id: egen max_len = max(length)
+		gen apellido1_2 = apellido1 if length == max_len
+		bys document_id: egen mode = mode(apellido1_2)
+		replace apellido1 = mode if diff == 1 & length != max_len
+		drop diff max_len length mode apellido1_2
+		
+	* Apellido2
+		bys document_id (apellido2): gen diff = apellido2[1] != apellido2[_N] 		
+		br document_id apellido1 apellido2 if diff == 1
+		gen length = strlen(apellido2)
+		bys document_id: egen max_len = max(length)
+		gen apellido2_2 = apellido2 if length == max_len
+		bys document_id: egen mode = mode(apellido2_2)
+		replace apellido2 = mode if diff == 1 & length != max_len
+		drop diff max_len length mode apellido2_2
+				
+	* Manual corrections
+		foreach var in apellido1 apellido2 {		
+			* spaces
+				replace `var' = strtrim(`var')
+		}	
+	
+	* Replace the mode for those whose has different spellings
+		br document_id apellido1 
+		bys document_id: egen mode_apellido1 = mode(apellido1)
+		replace apellido1 = mode_apellido1 if apellido1 != mode_apellido1 & !mi(mode_apellido1)
+		drop mode_apellido1
+		
+		br document_id apellido2
+		bys document_id: egen mode_apellido2 = mode(apellido2)
+		replace apellido2 = mode_apellido2 if apellido2 != mode_apellido2 & !mi(mode_apellido2)
+		drop mode_apellido2
+		
+	* For the remaining ones, we just pick one randomly. Mostly it's because mispellings in S/Z
+		bys document_id (apellido1): gen diff = apellido1[1] != apellido1[_N] 		
+		br document_id apellido1 apellido2 if diff == 1
+		set seed 12345
+		gen random = runiform() if !mi(apellido1)
+		bys document_id (random): gen count = _n
+		gen apellido1_2 = apellido1 if count == 1
+		bys document_id: egen mode = mode(apellido1_2)
+		replace apellido1 = mode if diff == 1
+		drop diff apellido1_2 mode random count
+		
+		* Apellido2 
+		bys document_id (apellido2): gen diff = apellido2[1] != apellido2[_N] 		
+		br document_id apellido1 apellido2 if diff == 1
+		set seed 12345
+		gen random = runiform() if !mi(apellido2)
+		bys document_id (random): gen count = _n
+		gen apellido2_2 = apellido2 if count == 1
+		bys document_id: egen mode = mode(apellido2_2)
+		replace apellido2 = mode if diff == 1
+		drop diff apellido2_2 mode random count
+		
+	* Get most common last names
+		preserve
+			* Reshape
+			reshape long apellido, i(school_code year document_id) j(no_apellido)
+			drop if mi(apellido)
+			
+			* Drop person duplicates
+			sort document_id no_apellido  apellido year
+			br document_id  no_apellido year apellido
+			duplicates drop document_id no_apellido apellido, force
+			isid document_id no_apellido
+			
+			* Collapse and count 
+			gen n_lastname = 1
+			collapse (count) n_lastname, by(apellido)
+			
+			* Identify the 15 most popular
+			gsort -n_lastname, gen(count)
+			gen popular = 1 if count <= 15
+			replace popular = 0 if mi(popular)
+			
+			* Gen probability of having that last name
+			egen n = sum(n_lastname)
+			gen prob = n_lastname/n
+			
+			tempfile common
+			save	`common'
+		restore			
+		
+		rename apellido1 apellido
+		merge m:1 apellido using `common', assert(2 3) keepus(popular prob) keep(3)
+		rename (popular prob) (popular_apellido1 prob_apellido1)
+		rename apellido apellido1
+		drop _merge
+		
+		rename apellido2 apellido
+		merge m:1 apellido using `common', keepus(popular prob) 
+		/*
+					Result                      Number of obs
+			-----------------------------------------
+			Not matched                        47,001
+				from master                    43,816  (_merge==1) // these are the one with empty last name 2
+				from using                      3,185  (_merge==2)
+
+			Matched                         2,158,947  (_merge==3)
+			----------------------------------------
+
+		*/
+		rename (popular prob) (popular_apellido2 prob_apellido2)
+		rename apellido apellido2	
+		drop if _merge == 2
+		drop _merge
+
+		
 	* Save dataset
 		*export delimited using "Docentes 2008-2017/base_docentes.csv", replace	
 		save "Data/base_docentes_clean_2011_2017.dta", replace
-	
-	
+
+		
+		
+
+

@@ -1,0 +1,139 @@
+\documentclass[12pt,runningheads]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[left=3.5cm,bottom=4cm]{geometry}
+\usepackage[all]{xy}
+\usepackage{amsmath,amsthm,amssymb,color,latexsym, mathrsfs, soul}
+\usepackage[round]{natbib}
+\usepackage{geometry}        
+\geometry{letterpaper}    
+\usepackage{float}
+\setlength{\parskip}{1em}
+\usepackage{threeparttable}
+\usepackage{lscape}
+\usepackage{setspace}
+
+\title{Nepotism in public schools in Colombia}
+\author{Camila Ayala}
+\date{\today}
+
+\onehalfspacing
+\begin{document}
+
+\maketitle
+
+\section{Introduction} 
+
+Historically, public school teacher vacancies have been used by politicians for clientelism and nepotism purposes, even after introducing a reform in 2002 aimed to reduce clientelism and increase transparency and meritocracy in the hiring of teachers \citep{duarte2001politica, eaton2014teachers}. In Colombia, 38\% of the universe of public servants (including teachers of public schools) have a relative in the public administration, and this has negative effects on agencies' performance (\cite{Riano2021}). However, we do not know how nepotism affects welfare-relevant outcomes such as test scores in Colombia.
+
+Measuring the impact of political connections is challenging because it is not easily observable. In this paper, I rely on the data constructed by \cite{Riano2021} on full career paths and family networks of the universe of civil servants in Colombia to answer two research questions. First, I will assess the existence of nepotism in the hiring of public teachers, measure its extent and characterize nepotistic teachers. Second, I will study the effects of nepotistic teachers on students' academic performance.
+
+Literature has extensively studied the impact of teachers on different educational variables, and the consensus is that, indeed, teachers and their characteristics matter. For instance, there is evidence on the effect on students' test scores of that cognitive skills (\cite{hanushek2019value}), temporary contracts (\cite{muralidharan2013contract}), behaviours in the classroom (\cite{araujo2016}), more teachers (\cite{kremer2009}), and other characteristics. Nevertheless, less is known about the impact of teachers' political connections on students' outcomes. 
+
+On that front, \cite{akhtari2022} use a regression discontinuity design in close elections and find that political turnover reduces test scores in Brazil. The authors argue that the effect is due to an increase in the replacement rate of principals and teachers. The other existing evidence studies the effect of the introduction of meritocratic reforms in hiring public school teachers, most of which aimed to reduce clientelism practices. While they found positive effects on test scores of the introduction of these anti-clientelism reforms, these papers do not address the problem of clientelism or nepotism directly. (\cite{estrada2019}, \cite{brutti2022})
+
+In principle, the effect of nepotistic teachers on test scores is ambiguous. On the one hand, it could be that they are better screened and more qualified and motivated, and thus, better suited for students' learning. On the other hand, it could be the case that nepotistic teachers are less competent compared to other candidates, with negative impacts on test scores. The net effect will depend on the characteristics of both nepotistic teachers and non-nepotistic teachers, but also on the pool of candidates who were not hired because a nepotistic teacher was chosen instead. While the first two can be measured with administrative data, information on the pool of qualified candidates is usually not available. In this paper, I will use data on candidates' scores in the merit entry exam for the teaching career in Colombia to compare nepotistic teachers with other candidates that were not hired. This will contribute to the literature and shed some light on which mechanism between better screening versus favoritism plays a more significant role in nepotistic hiring.
+
+The paper proceeds as follows. Section 2 describes the data sources used in this paper. Section 3 defines what is considered a nepotistic teacher in Colombia's context and describes the exercise of characterization of nepotistic teachers. Section 4 describes the empirical strategy to estimate the impact of nepotism on academic performance.
+
+\section{Data} 
+I will use four sources of information to estimate the impact of nepotistic teachers on students' academic performance. Firstly, data from teachers comes from the Ministry of Education, and it is an annual census of the universe of teachers in public schools in Colombia. This data is available for 2008-2017 and includes information on teachers such as the school and the subject they teach, their education level, age, experience, and type of contract, among other variables. Importantly, this dataset also includes the teachers' full names and national identification numbers, which allows matching this data with other administrative datasets. Unfortunately, it is not possible to match teachers to students as the data does not give information about the specific grade teachers teach, only the level of education (i.e., primary or secondary). Therefore, I can only calculate tests scores at the school level. 
+
+Secondly, the data from students' test scores come from the ICFES\footnote{Instituto Colombiano para el Fomento de la Educación Superior. This is the agency that administers the standardized tests in Colombia.}. Students take standardized tests in grades 3, 5, 9, and 11\footnote{Grade 11 is the last grade in Colombia.}. Data for grade 11 is available at the student level and includes test scores for math, natural sciences, social sciences, English, and language. On the contrary, data for test scores in grades 3, 5, and 9 are available only at the school level and include scores for math and language. The main results of this paper will use test scores in grade 11; therefore, I will only use the information on teachers in secondary education. 
+
+Thirdly, I will use the dataset built by \cite{Riano2021} to identify the nepotistic teachers in public schools. This dataset uses detailed administrative data to reconstruct the full career paths and the family networks of the universe of civil servants in Colombia, including teachers at public schools, from 2011 to 2017. Then, using the national identification number and full names, I can match this information on family networks with my first dataset on teachers' information and identify the nepotistic teachers, which schools they belong to, and which subject they teach.
+
+Finally, I will use data on teachers' scores in the merit contest exam to enter the public teaching career for 2005-2007, 2009, and 2013. This dataset includes the scores of all the candidates that took the merit exam in a specific year and whether they passed it. Additionally, it contains the national ID numbers, which allows merging with the other data sources and, therefore, identifying if they were employed or not, in which schools, and if they have a nepotistic connection.
+
+\section{Nepotistic teachers} 
+
+As mentioned earlier, one of the purposes of this paper is to assess whether there is nepotism in the hiring of public school teachers in Colombia. Even though there is some evidence in particular cases that shows that nepotism and favoritism are indeed a problem, there is no concrete evidence of nepotism as a systematic problem in the education sector and its extent. Additionally, it is unclear what type of connection determines a nepotistic teacher. In Colombia, teachers are appointed by the head of the local education authority, which in turn is appointed by the department governor or city mayor. For this reason, I will consider a teacher as nepotistic if she is connected to the mayor, governor, or Secretary of Education of the municipality where the school is located. In future analyses, political connections to other types of bureaucrats will be explored.
+
+In an initial exercise, I will attempt to understand the problem of nepotism in the hiring of public school teachers. For this purpose, I will identify the nepotistic teachers using the definition previously described and determine what percentage of teachers they represent. Furthermore, I will characterize nepotistic teachers in terms of education, experience, type of contract, age, and ability (measured by the score in the merit exam). This will provide some evidence on how nepotistic teachers might be affecting students' test scores. Moreover, because I have test scores on the merit exam for the pool of all applicants, I can contribute to the literature by shedding some light on whether nepotistic teachers are being chosen because they are better candidates (i.e., higher scores) or because of favoritism. 
+
+Once this characterization is done, I will estimate the causal impact of nepotism on students' academic performance using the empirical strategy described in the next section. 
+
+
+\section{Empirical strategy} 
+
+Nepotistic teachers are not assigned randomly across schools. For instance, there could be more nepotism in schools that perform worse historically. Alternatively, it could be the case that there is more nepotism in schools located in small municipalities where the state presence is low, which at the same time affects test scores. Thus, estimating an equation with test scores as a dependent variable and nepotistic teachers as an independent variable will produce biased estimates due to endogeneity. To address this problem, I propose two different empirical strategies.
+
+\subsection{Variation within school-subject}
+
+Firstly, I will exploit the variation of nepotistic teachers within school-subject across years. In this specification, I will estimate the following equation:
+\begin{align}
+\text{test-scores}_{s,i,t}= \beta \text{nepotism}_{s,i,t} + \gamma_t + \gamma_{s,i} + X_{s,i,t}\Omega + \varepsilon_{s,i,t}
+\end{align}
+Where $test scores_{s,i,t}$ is the average test scores in subject s, in school i, at year t; $nepotism_{s,i,t}$ is the share of nepotistic teachers in subject s, in school i, at year t; $\gamma_t$ represents year fixed effects; $\gamma_{s,i}$ represents subject-school fixed effects; and $X_{s,i,t}$ represents a set of control that varies by subject, school and year, such as the average experience of teachers in subject s, in school i in year t.
+
+The key assumption of this estimation strategy is that the distribution of nepotistic teachers across subjects is close to random. This assumption could not hold if, for instance, there are more nepotistic teachers in Language than Math because it is easier to hire teachers for Language because it has fewer requirements. Nevertheless, the minimum requirement to be hired as a teacher, regardless of the type of contract, is to have a bachelor's degree in an area related to the subject they teach. Therefore, it is unlikely that it is easier to hire teachers in certain areas. Once I have access to the full data, I will test for evidence supporting the validity of this assumption.
+
+
+\subsection{Variation in family connections}
+Secondly, I will exploit variation in family connections caused by the turnover of top bureaucrats. As explained in the previous section, I will consider family connections to the head of the Secretary of Education, the governor, and the mayor where the school is located. Therefore, I will estimate the following equation:
+\begin{align}
+\text{test-scores}_{i,t}= \phi \text{TopConnected}_{i,t} + \gamma_t + \gamma_{i} + X_{i,t}\Psi + \mu_{i,t}
+\end{align}
+Where $\text{test-scores}_{i,t}$ is the test scores of teacher i's subject in year t; $\text{TopConnected}_{i,t}$ is a dummy variable equal to one if teacher i has a family connection in year t; $\gamma_t$ represents year fixed-effects; $\gamma_{s,i}$ represents teacher fixed-effects and thus, I will use within-teacher variation; and $X_{i,t}$ is a set of teacher controls that varies by year. 
+
+The main identification assumption underlying this specification is that test scores show parallel trends in the absence of political connections. Since family connections are determined by consanguinity, which does not change over time, and the turnover of top bureaucrats will affect all schools and teachers in that municipality, it is plausible that this condition holds. Nevertheless, I can control for pre-trends using a dynamic event-study specification. 
+
+\section{Results}
+
+\section{Conclusion}
+
+
+\bibliographystyle{apalike}
+\bibliography{refs}
+
+\newpage
+\newgeometry{left=1cm,bottom=0.1cm} 
+\begin{table}[H]
+\centering
+\renewcommand*{\arraystretch}{1.2}
+\begin{threeparttable}
+\caption{Results }
+\input{results_saber11_schoolvariation}
+\begin{tablenotes}
+\footnotesize
+    \item 
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\restoregeometry
+
+
+\newpage
+\newgeometry{left=1cm,bottom=0.1cm} 
+\begin{table}[H]
+\centering
+\renewcommand*{\arraystretch}{1.2}
+\begin{threeparttable}
+\caption{Connected vs. no connected - no FE}
+\input{descriptive_stats_connectedvsnoconnected_noFE}
+\begin{tablenotes}
+\footnotesize
+    \item 
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\restoregeometry
+
+\newpage
+\newgeometry{left=1cm,bottom=0.1cm} 
+\begin{table}[H]
+\centering
+\renewcommand*{\arraystretch}{1.2}
+\begin{threeparttable}
+\caption{Connected vs. no connected 2011 - with FE}
+\input{descriptive_stats_connectedvsnoconnected_withFE}
+\begin{tablenotes}
+\footnotesize
+    \item 
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\restoregeometry
+
+
+\end{document}
