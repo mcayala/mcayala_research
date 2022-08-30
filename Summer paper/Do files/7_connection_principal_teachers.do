@@ -14,6 +14,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		
 	* gen indicator for Directivo docentes: coordinador, director de nucleo, director rural
 		gen directivo = (position == 2)
+		gen teacher = (position == 1)
 		
 	* Gen indicator for principal
 		gen principal = (nombre_cargo == "6")
@@ -25,9 +26,10 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		br school_code year apellido directivo principal
 		sort school_code year apellido
 		gen n_apellido = 1
+		gen n_apellido_teacher = teacher
 		gen n_apellido_directivo = directivo
 		gen n_apellido_principal = principal
-		collapse (max) directivo principal (sum) n_apellido n_apellido_directivo n_apellido_principal, by(school_code year apellido)
+		collapse (max) directivo principal teacher (sum) n_apellido n_apellido_directivo n_apellido_principal n_apellido_teacher, by(school_code year apellido)
 	
 	* Make school_code numerical
 		rename school_code school_code2
