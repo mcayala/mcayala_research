@@ -4,7 +4,6 @@
  
  
 use "Data/merge_JF_teachers_secundaria.dta", clear
-drop *_ap*
 
 	lab var connected_ty "Connected (JF)"
 	lab var connected_tby "Top Connected (JF)"
@@ -22,25 +21,28 @@ drop *_ap*
 	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)"
 
 drop connected_*3
+
+*----------------------*
+* Winning a connection *
+*----------------------*	
 	
-	
-foreach var of varlist connected_ty connected_tby connected_council connected_council2 connected_teacher connected_teacher2 connected_principal connected_principal2 connected_directivo connected_directivo2 {
+foreach var of varlist connected_ty  connected_council  connected_directivo connected_teacher {
 	gen year_`var' = year if `var' == 1
 	bys document_id: egen event_`var' = min(year_`var')
-	gen t_`var' = year - event_`var' +1
+	replace event_`var' = . if  event_`var' == 2012
+	gen t_`var' = year - event_`var' 
 
 	* Create binned variable
-		*histogram enacted if t == 0
 		tab t_`var'
 		gen 	t_bin_`var' = t_`var'
-		replace t_bin_`var' = 3 if t_`var' > 2 & t_`var' != .
-		replace t_bin_`var' = -2 if t_`var' < -2
+		replace t_bin_`var' = 3 if t_`var' > 3 & t_`var' != .
+		replace t_bin_`var' = -3 if t_`var' < -3
 		tab t_`var' t_bin_`var'
 
 	* Create event time dummies
 		tab t_bin_`var', gen(D_time_`var')
-		forvalues i = 1/6 {
-			loc j = `i' - 3
+		forvalues i = 1/7 {
+			loc j = `i' - 4
 			lab var D_time_`var'`i' "`j'"
 			if `j' < 0 {
 				loc k = -`j'
@@ -49,12 +51,72 @@ foreach var of varlist connected_ty connected_tby connected_council connected_co
 			else {
 			rename D_time_`var'`i' D_time_`var'`j'
 			}
-		}
+		}		
+		
 	
 	local title: variable label `var' 
 	
-	reghdfe std_score D_time_`var'_2 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 D_time_`var'_1 $controls, absorb(year document_id)
-	loc order_var "D_time_`var'_2 D_time_`var'_1 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 "
+	reghdfe std_score D_time_`var'_3 D_time_`var'_2 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 D_time_`var'_1 $controls, absorb(year document_id)
+	
+	loc order_var "D_time_`var'_3 D_time_`var'_2 D_time_`var'_1 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 "
+	
 	loc graph_opts "vertical keep(D_time*) omitted graphregion(color(white)) xtitle(Years before connection, size(small)) ytitle(Coefficients, size(small)) xsize(16) ysize(9) yline(0)  msize(small) ylabel(,labsize(vsmall)) xlabel(,labsize(vsmall))"
 	coefplot, name(`var', replace) title("`title'", size(smalll)) order(`order_var') `graph_opts'
 }
+
+graph combine connected_ty  connected_council  connected_directivo connected_teacher, title("Gaining a connection") name(gaining_connection, replace)
+
+*---------------------*
+* Losing a connection *
+*---------------------*	
+	
+	br document_id year connected_ty
+	sort document_id year
+	
+foreach var of varlist connected_ty  connected_council  connected_directivo connected_teacher {
+	bys document_id: egen event_lose_`var' = max(year_`var')
+	replace event_lose_`var' = . if  event_lose_`var' == 2017
+	gen t_lose_`var' = year - event_lose_`var' -1
+	
+	* Create binned variable
+		tab t_lose_`var'
+		gen 	t_bin_lose_`var' = t_lose_`var'
+		replace t_bin_lose_`var' = 3 if t_lose_`var' > 3 & t_lose_`var' != .
+		replace t_bin_lose_`var' = -3 if t_lose_`var' < -3
+		tab t_lose_`var' t_bin_lose_`var'
+	
+	* Create event time dummies
+		tab t_bin_lose_`var', gen(D_lose_`var')
+		forvalues i = 1/7 {
+			loc j = `i' - 4
+			lab var D_lose_`var'`i' "`j'"
+			if `j' < 0 {
+				loc k = -`j'
+				rename D_lose_`var'`i' D_lose_`var'_`k'
+			}
+			else {
+			rename D_lose_`var'`i' D_lose_`var'`j'
+			}
+		}		
+		
+	local title: variable label `var' 
+	
+	reghdfe std_score D_lose_`var'_3 D_lose_`var'_2 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2 D_lose_`var'3 D_lose_`var'_1 $controls, absorb(year document_id)
+	loc order_var "D_lose_`var'_3 D_lose_`var'_2 D_lose_`var'_1 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2 D_lose_`var'3 "
+	
+	loc graph_opts "vertical keep(D_lose_*) omitted graphregion(color(white)) xtitle(Years before losing connection, size(small)) ytitle(Coefficients, size(small)) xsize(16) ysize(9) yline(0)  msize(small) ylabel(,labsize(vsmall)) xlabel(,labsize(vsmall))"
+	
+	coefplot, name(lose_`var', replace) title("`title'", size(smalll)) order(`order_var') `graph_opts'
+}	
+
+	
+graph combine lose_connected_ty  lose_connected_council  lose_connected_directivo lose_connected_teacher, title("Losing a connection") name(losing_connection, replace)
+	
+	-
+	
+	
+	
+	
+	
+	
+	
