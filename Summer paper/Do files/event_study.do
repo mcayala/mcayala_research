@@ -2,10 +2,11 @@
 
 	global controls  "age type_contract"		
  
- 
+ global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
+
 use "Data/merge_JF_teachers_secundaria.dta", clear
 
-	lab var connected_ty "Connected (JF)"
+	lab var connected_ty "Connected to Non-elected Bureaucrat"
 	lab var connected_tby "Top Connected (JF)"
 	lab var connected_council "Connected to Council Member"
 	lab var connected_council2 "Connected to Council Member (no common last names)"
@@ -64,7 +65,10 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 	coefplot, name(`var', replace) title("`title'", size(smalll)) order(`order_var') `graph_opts'
 }
 
-graph combine connected_ty  connected_council  connected_directivo connected_teacher, title("Gaining a connection") name(gaining_connection, replace)
+graph combine connected_ty  connected_council  connected_directivo connected_teacher, name(gaining_connection, replace)
+graph export "$output/gaining_connection.png", replace
+graph close _all
+
 
 *---------------------*
 * Losing a connection *
@@ -110,8 +114,9 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 }	
 
 	
-graph combine lose_connected_ty  lose_connected_council  lose_connected_directivo lose_connected_teacher, title("Losing a connection") name(losing_connection, replace)
-	
+graph combine lose_connected_ty  lose_connected_council  lose_connected_directivo lose_connected_teacher, name(losing_connection, replace)
+graph export "$output/losing_connection.png", replace
+graph close _all	
 	-
 	
 	

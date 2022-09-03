@@ -35,141 +35,6 @@ prog mergemodels, eclass
 end
 
 *---------------------------------*
-* Variation within school-subject *
-*---------------------------------*
-
-*log using "${log}/results_saber11_schoolvariation_$date.log", replace
-
-use "Data/school_subject_with_testscores_dataset.dta", clear
-
-
-sum connected*
-
-* Declare globals 
-	global controls1 "temporary female posgraduate"
-	global fe "year school_code"
-	global esttab_opt "b(3) se(3) r2(3) scalars(N) sfmt(0)"
-	global pvalues "gaps star(* 0.10 ** 0.05 *** 0.01)"
-
-* Labels
-	lab var connected_ty "Connected (JF)"
-	lab var connected_tby "Top Connected (JF)"
-	lab var connected_council "Connected to Council Member"
-	lab var connected_council2 "Connected to Council Member (no common last names)"
-	lab var connected_council3 "Connected to Council Member (continuous var)"
-	lab var connected_principal "Connected to Principal"
-	lab var connected_principal2 "Connected to Principal (no common last names)"
-	lab var connected_principal3 "Connected to Principal (continuous var)"
-	lab var connected_directivo "Connected to Admin Staff in the School"
-	lab var connected_directivo2 "Connected to Admin Staff in the School (no common last names)"
-	lab var connected_directivo3 "Connected to Admin Staff in the School (continuous var)"
-	lab var connected_teacher "Connected to Any Teacher in the School"
-	lab var connected_teacher2 "Connected to Any Teacher in the School (no common last names)"
-	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)"
-	
-* School fixed effects
-estimates clear
-
-	* Connected to public sector (JF)
-	reghdfe std_score connected_ty $controls1, absorb($fe)
-	est store mod1
-		
-	* Connected to top bureaucrat (JF)	
-	reghdfe std_score connected_tby $controls1, absorb($fe)
-	est store mod2
-	
-	* Connected to a council member 
-	reghdfe std_score connected_council $controls1, absorb($fe)
-	est store mod3
-	
-	* Connected to the principal of the school
-	reghdfe std_score connected_principal $controls1, absorb($fe)	
-	est store mod4
-	
-	* Connected to admin staff in the school (including principal)
-	reghdfe std_score connected_directivo $controls1, absorb($fe)
-	est store mod5
-	
-	* Connected to any other teacher in the school
-	reghdfe std_score connected_teacher $controls1, absorb($fe)	
-	est store mod6	
-	
-	mergemodels mod1 mod2 mod3 mod4 mod5 mod6 
-	est sto allmodels
-	esttab allmodels, keep(connected_*) $esttab_opt noconst label  $pvalues 	
-
-* Without common last names	
-	
-	* Connected to a council member - without common last names
-	drop connected_council 
-	rename connected_council2 connected_council 
-	reghdfe std_score connected_council $controls1, absorb($fe)
-	est store mod7
-	
-	* Connected to the principal of the school
-	drop connected_principal 
-	rename connected_principal2 connected_principal
-	reghdfe std_score connected_principal $controls1, absorb($fe)
-	est store mod8
-	
-	* Connected to admin staff in the school (including principal)
-	drop connected_directivo 
-	rename connected_directivo2 connected_directivo
-	reghdfe std_score connected_directivo $controls1, absorb($fe)
-	est store mod9
-	
-	* Connected to any other teacher in the school
-	drop connected_teacher
-	rename connected_teacher2 connected_teacher
-	reghdfe std_score connected_teacher $controls1, absorb($fe)
-	est store mod10
-	
-	mergemodels  mod7 mod8 mod9 mod10
-	est sto allmodels2
-	
-* Continuous var
-	
-	* Connected to a council member - without common last names
-	drop connected_council 
-	rename connected_council3 connected_council 
-	reghdfe std_score connected_council $controls1, absorb($fe)
-	est store mod11
-	
-	* Connected to the principal of the school
-	drop connected_principal 
-	rename connected_principal3 connected_principal
-	reghdfe std_score connected_principal $controls1, absorb($fe)
-	est store mod12
-	
-	* Connected to admin staff in the school (including principal)
-	drop connected_directivo 
-	rename connected_directivo3 connected_directivo
-	reghdfe std_score connected_directivo $controls1, absorb($fe)
-	est store mod13
-	
-	* Connected to any other teacher in the school
-	drop connected_teacher
-	rename connected_teacher3 connected_teacher
-	reghdfe std_score connected_teacher $controls1, absorb($fe)
-	est store mod14
-	
-	
-	mergemodels  mod11 mod12 mod13 mod14
-	est sto allmodels3
-	esttab allmodels allmodels2 allmodels3, keep(connected_*) $esttab_opt noconst label  $pvalues 	mtitles("Basic" "No common last names" "Continuous measure")
-	
-
-	
-	
-	
-	
-	
-*log c
-
-*copy "${log}/results_saber11_schoolvariation_$date.log" ///
-*	"Log files/results_saber11_schoolvariation_$date.log", replace
-
-*---------------------------------*
 * Variation in family connections *
 *---------------------------------*
 
@@ -182,7 +47,7 @@ global controls  "age type_contract"
 sum connected_*
 
 * Labels
-	lab var connected_ty "Connected (JF)"
+	lab var connected_ty "Connected to Non-elected Bureaucrat"
 	lab var connected_tby "Top Connected (JF)"
 	lab var connected_council "Connected to Council Member"
 	lab var connected_council2 "Connected to Council Member (no common last names)"
@@ -197,6 +62,52 @@ sum connected_*
 	lab var connected_teacher2 "Connected to Any Teacher in the School (no common last names)"
 	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)"
  
+ 
+ 	* Connected to public sector (JF)
+		reghdfe std_score connected_ty $controls, absorb(year document_id)
+		outreg2 using "${output}/results", tex replace keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes)
+
+	* Connected to a council member 
+		drop connected_ty 
+		rename connected_council connected_ty
+		reghdfe std_score connected_ty $controls, absorb(year document_id)
+		outreg2 using "${output}/results", tex keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes)
+		
+	* Connected to  admin staff in the school (including principal)
+		drop connected_ty 
+		rename connected_directivo connected_ty
+		reghdfe std_score connected_ty $controls, absorb(year document_id)
+		outreg2 using "${output}/results", tex keep(connected_ty) 	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+		
+	* Connected to any other teacher in the school
+		drop connected_ty 
+		rename connected_teacher connected_ty
+		reghdfe std_score connected_ty $controls, absorb(year document_id)
+		outreg2 using "${output}/results", tex keep(connected_ty)	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+				
+		
+* Robustness checks
+
+
+	* Connected to a council member 
+		rename connected_council3 connected_ty3
+		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
+		outreg2 using "${output}/results_robustness", tex replace keep(connected_ty3) addtext("Year FE", Yes, "Teacher FE",  Yes)
+		
+	* Connected to  admin staff in the school (including principal)
+		drop connected_ty3 
+		rename connected_directivo3 connected_ty3
+		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
+		outreg2 using "${output}/results_robustness", tex keep(connected_ty3) 	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+		
+	* Connected to any other teacher in the school
+		drop connected_ty3 
+		rename connected_teacher3 connected_ty3
+		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
+		outreg2 using "${output}/results_robustness", tex keep(connected_ty3)	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+	-					
+		
+		
 estimates clear
 
 	* Connected to public sector (JF)

@@ -5,6 +5,11 @@
  cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 *  ssc install blindschemes
  set scheme plotplainblind
+ ssc install geo2xy, replace     
+ssc install palettes, replace        
+ssc install colrspace, replace
+ssc install spmap, replace
+
 
 global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
 
@@ -16,7 +21,96 @@ global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
 	tempfile merit_test
 	save	`merit_test'
 
+*--------------------------------------*
+* Percentage of connected in each year *
+*--------------------------------------*
+	
+* Open dataset
+use "Data/merge_JF_teachers_secundaria.dta", clear
 
+br document_id year connected_ty connected_council connected_directivo connected_teacher
+sort document_id year 
+
+gen uno = 1
+
+collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(year)
+
+foreach var in connected_ty connected_council connected_directivo connected_teacher {
+	replace `var' = `var'*100
+}
+
+	lab var connected_ty "Connected to Non-elected Bureaucrat"
+	lab var connected_council "Connected to Council Member"
+	lab var connected_directivo "Connected to Admin Staff in the School"
+	lab var connected_teacher "Connected to Any Teacher in the School"
+
+graph bar connected_ty connected_directivo connected_council  connected_teacher, over(year, label(labsize(vsmall))) blabel(total, format(%9.1f) size(vsmall)) legend(cols(2) order(1 "Connected to Non-elected Bureaucrat" 2 "Connected to Admin Staff in the School" 3 "Connected to Council Member" 4 "Connected to Any Teacher in the School") size(vsmall) position(6)) ytitle("Percentage of secondary teachers", size(small)) ylabel(,labsize(vsmall)) //note(Source: Ministry of National Education of Colombia and Riaño (2022), size(tiny))
+graph export "$output/percent_connected_year.png", replace
+
+graph close _all
+
+*---------------------*
+* Map by municipality * 
+*---------------------*
+
+cd "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data"
+
+	/*
+	use "municipios_shp", clear
+
+	// Make sure the coordinates are inside the (-180,180) bounds   
+
+	replace _X = 180 if _X > 180 & _X!=.
+
+	geo2xy _Y _X, proj(web_mercator) replace
+
+	save "municipios_shp2.dta", replace
+*/
+
+
+use "merge_JF_teachers_secundaria.dta", clear
+
+mdesc muni_code
+
+gen uno = 1
+
+collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(muni_code)
+	tempfile prop_muni
+	save	`prop_muni'
+
+*spshape2dta "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data/col-administrative-divisions-shapefiles/col_admbnda_adm2_mgn_20200416",  replace saving(municipios)	
+
+
+
+use "municipios.dta", clear
+
+gen muni_code = substr(ADM2_PCODE, 3,.)
+destring muni_code, replace
+isid muni_code
+
+merge 1:1 muni_code using `prop_muni'
+drop if _merge == 2
+
+
+format connected_ty connected_council connected_directivo connected_teacher %12.2fc
+format connected_ty  %12.4fc
+set scheme white_tableau
+
+
+spmap connected_ty using "municipios_shp2", id(_ID) clnum(5) legstyle(2) title("Connected to Non-elected Bureaucrat", size(5)) fcolor(Blues2) name(connected_ty, replace) 
+spmap connected_council using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Council Member", size(5)) fcolor(Blues2) name(connected_council, replace)
+spmap connected_directivo using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Admin Staff in the School", size(5)) fcolor(Blues2) name(connected_directivo, replace)
+spmap connected_teacher using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Any Teacher in the School", size(5)) fcolor(Blues2) name(connected_teacher, replace)
+
+graph combine connected_ty connected_council, name(maps1, replace)
+graph export "$output/maps1.png", replace
+
+
+graph combine connected_directivo connected_teacher, name(maps2, replace)
+graph export "$output/maps2.png", replace
+
+graph close _all
+	
 *---------------------------*
 * Connected vs no connected *
 *---------------------------*
@@ -95,20 +189,7 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 	lab var type_contract1 "Type of contract: Temporary"
 	lab var type_contract2 "Type of contract: Permanent"
 	lab var prom "Merit exam test score"
-	lab var connected_ty "Connected (JF)"
-	lab var connected_tby "Top Connected (JF)"
-	lab var connected_council "Connected to Council Member"
-	lab var connected_council2 "Connected to Council Member (no common last names)"
-	lab var connected_council3 "Connected to Council Member (continuous var)"
-	lab var connected_principal "Connected to Principal"
-	lab var connected_principal2 "Connected to Principal (no common last names)"
-	lab var connected_principal3 "Connected to Principal (continuous var)"
-	lab var connected_directivo "Connected to Admin Staff in the School"
-	lab var connected_directivo2 "Connected to Admin Staff in the School (no common last names)"
-	lab var connected_directivo3 "Connected to Admin Staff in the School (continuous var)"
-	lab var connected_teacher "Connected to Any Teacher in the School"
-	lab var connected_teacher2 "Connected to Any Teacher in the School (no common last names)"
-	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)"
+
 	
 	
 	egen double fe = group(school_code2)
