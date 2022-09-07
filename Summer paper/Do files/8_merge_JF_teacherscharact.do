@@ -152,13 +152,13 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	
 * Merge names with apellido1
 	rename apellido1 apellido
-	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", assert(2 3) keepus(directivo principal n_apellido*)
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", assert(2 3) keepus(directivo principal teacher n_apellido*)
 	drop if _merge == 2
 
 * Gen connection var
-	br year school_code apellido directivo _merge principal n_*
+	br year school_code apellido directivo teacher _merge principal n_apellido*
 	gen 	connected_teacher_ap1 = .
-	replace connected_teacher_ap1 = 1 if _merge == 3 & n_apellido > 1
+	replace connected_teacher_ap1 = 1 if _merge == 3 & n_apellido_teacher > 1 & teacher == 1
 	replace connected_teacher_ap1 = 0 if mi(connected_teacher_ap1)
 	
 	gen 	connected_principal_ap1 = .
@@ -169,18 +169,18 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	replace connected_directivo_ap1 = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
 	replace connected_directivo_ap1 = 0 if mi(connected_directivo_ap1)
 	rename apellido apellido1
-	rename (n_apellido n_apellido_directivo n_apellido_principal) (n_apellido_teacher1 n_apellido_directivo1 n_apellido_principal1)
-	drop _merge directivo principal  
+	rename (n_apellido_teacher n_apellido_directivo n_apellido_principal) (n_apellido_teacher1 n_apellido_directivo1 n_apellido_principal1)
+	drop _merge directivo principal teacher  
 
 * Merge names with apellido2
 	rename apellido2 apellido
-	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", keepus(directivo principal n_apellido*)
+	merge m:1 year school_code apellido using "Data/principal&teachers_lastnames", keepus(directivo principal teacher n_apellido*)
 	drop if _merge == 2
 
 * Gen connection var for apellido2
-	br year school_code apellido directivo _merge principal n_apellido
+	br year school_code apellido directivo teacher _merge principal n_apellido*
 	gen 	connected_teacher_ap2 = .
-	replace connected_teacher_ap2 = 1 if _merge == 3 & n_apellido > 1
+	replace connected_teacher_ap2 = 1 if _merge == 3 & n_apellido_teacher > 1  & teacher == 1
 	replace connected_teacher_ap2 = 0 if mi(connected_teacher_ap2)
 	
 	gen 	connected_principal_ap2 = .
@@ -191,8 +191,8 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	replace connected_directivo_ap2 = 1 if _merge == 3 & n_apellido > 1 & directivo == 1
 	replace connected_directivo_ap2 = 0 if mi(connected_directivo_ap2)
 	rename apellido apellido2
-	rename (n_apellido n_apellido_directivo n_apellido_principal) (n_apellido_teacher2 n_apellido_directivo2 n_apellido_principal2)
-	drop _merge directivo principal  
+	rename (n_apellido_teacher n_apellido_directivo n_apellido_principal) (n_apellido_teacher2 n_apellido_directivo2 n_apellido_principal2)
+	drop _merge directivo principal teacher 
 
 * Gen connection var 
 	gen 	connected_teacher = .
@@ -274,6 +274,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	keep if _merge == 3
 	
 * Save dataset
+	drop *_ap*
 	save "Data/merge_JF_teachers_secundaria.dta", replace
 	restore
 	
