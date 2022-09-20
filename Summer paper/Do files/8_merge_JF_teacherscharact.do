@@ -273,6 +273,22 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	*/
 	keep if _merge == 3
 	
+*--------------------------*
+* Create control variables *
+*--------------------------*	
+	
+	* Education level
+	tab educ_level, m
+	gen 	postgrad_degree = 0 if inlist(educ_level, 0, 1, 2, 3)
+	replace postgrad_degree = 1 if inlist(educ_level, 4)
+	lab var postgrad_degree "Teacher hold a post grad degree"
+	
+	* Temporary position
+	tab type_contract, m
+	gen temporary = (type_contract == 2)
+	replace temporary = . if mi(type_contract)
+		
+	
 * Save dataset
 	drop *_ap*
 	save "Data/merge_JF_teachers_secundaria.dta", replace
