@@ -33,18 +33,13 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 	bys document_id: egen event_`var' = min(year_`var')
 	replace event_`var' = . if  event_`var' == 2012
 	gen t_`var' = year - event_`var' 
-
-	* Create binned variable
-		tab t_`var'
-		gen 	t_bin_`var' = t_`var'
-		replace t_bin_`var' = 3 if t_`var' > 3 & t_`var' != .
-		replace t_bin_`var' = -3 if t_`var' < -3
-		tab t_`var' t_bin_`var'
+	replace t_`var' = . if t_`var'> 2
+	replace t_`var' = . if t_`var'< -2
 
 	* Create event time dummies
-		tab t_bin_`var', gen(D_time_`var')
-		forvalues i = 1/7 {
-			loc j = `i' - 4
+		tab t_`var', gen(D_time_`var')
+		forvalues i = 1/5 {
+			loc j = `i' - 3
 			lab var D_time_`var'`i' "`j'"
 			if `j' < 0 {
 				loc k = -`j'
@@ -53,21 +48,31 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 			else {
 			rename D_time_`var'`i' D_time_`var'`j'
 			}
-		}		
+		}
 		
+	egen total_`var' = rowtotal(D_time_`var'*), missing
+	bys document_id: egen keep_`var' = sum(total_`var')
+	replace keep_`var' = . if total_`var' == .
+}
+
+
+
+foreach var of varlist connected_ty  connected_council  connected_directivo connected_teacher {
 	
 	local title: variable label `var' 
 	
-	reghdfe std_score D_time_`var'_3 D_time_`var'_2 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 D_time_`var'_1 $controls, absorb(year document_id muni_code)
+	reghdfe std_score D_time_`var'_2 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'_1 $controls i.year if keep_`var' >=5, absorb(document_id muni_code)
 	
-	loc order_var "D_time_`var'_3 D_time_`var'_2 D_time_`var'_1 D_time_`var'0 D_time_`var'1 D_time_`var'2 D_time_`var'3 "
+	loc order_var " D_time_`var'_2 D_time_`var'_1 D_time_`var'0 D_time_`var'1 D_time_`var'2  "
 	
 	loc graph_opts "vertical keep(D_time*) omitted graphregion(color(white)) xtitle(Years before connection, size(small)) ytitle(Coefficients, size(small)) xsize(16) ysize(9) yline(0)  msize(small) ylabel(,labsize(vsmall)) xlabel(,labsize(vsmall))"
 	coefplot, name(`var', replace) title("`title'", size(smalll)) order(`order_var') `graph_opts'
 }
 
+
+
 graph combine connected_ty  connected_council  connected_directivo connected_teacher, name(gaining_connection, replace)
-graph export "$output/gaining_connection.png", replace
+graph export "$output/gaining_connection_robust.png", replace
 graph close _all
 
 
@@ -82,18 +87,13 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 	bys document_id: egen event_lose_`var' = max(year_`var')
 	replace event_lose_`var' = . if  event_lose_`var' == 2017
 	gen t_lose_`var' = year - event_lose_`var' -1
-	
-	* Create binned variable
-		tab t_lose_`var'
-		gen 	t_bin_lose_`var' = t_lose_`var'
-		replace t_bin_lose_`var' = 3 if t_lose_`var' > 3 & t_lose_`var' != .
-		replace t_bin_lose_`var' = -3 if t_lose_`var' < -3
-		tab t_lose_`var' t_bin_lose_`var'
+	replace t_lose_`var' = . if t_lose_`var' > 2
+	replace t_lose_`var' = . if t_lose_`var' < -2
 	
 	* Create event time dummies
-		tab t_bin_lose_`var', gen(D_lose_`var')
-		forvalues i = 1/7 {
-			loc j = `i' - 4
+		tab t_lose_`var', gen(D_lose_`var')
+		forvalues i = 1/5 {
+			loc j = `i' - 3
 			lab var D_lose_`var'`i' "`j'"
 			if `j' < 0 {
 				loc k = -`j'
@@ -103,11 +103,19 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 			rename D_lose_`var'`i' D_lose_`var'`j'
 			}
 		}		
+	egen total_lose_`var' = rowtotal(D_lose_`var'*), missing
+	bys document_id: egen keep_lose_`var' = sum(total_lose_`var')
+	replace keep_lose_`var' = . if total_lose_`var' == .	
+		
+}
+
+
+foreach var of varlist connected_ty  connected_council  connected_directivo connected_teacher {
 		
 	local title: variable label `var' 
 	
-	reghdfe std_score D_lose_`var'_3 D_lose_`var'_2 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2 D_lose_`var'3 D_lose_`var'_1 $controls, absorb(year document_id muni_code)
-	loc order_var "D_lose_`var'_3 D_lose_`var'_2 D_lose_`var'_1 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2 D_lose_`var'3 "
+	reghdfe std_score D_lose_`var'_2 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2  D_lose_`var'_1 $controls i.year, absorb(document_id muni_code)
+	loc order_var "D_lose_`var'_2 D_lose_`var'_1 D_lose_`var'0 D_lose_`var'1 D_lose_`var'2"
 	
 	loc graph_opts "vertical keep(D_lose_*) omitted graphregion(color(white)) xtitle(Years before losing connection, size(small)) ytitle(Coefficients, size(small)) xsize(16) ysize(9) yline(0)  msize(small) ylabel(,labsize(vsmall)) xlabel(,labsize(vsmall))"
 	
@@ -116,7 +124,7 @@ foreach var of varlist connected_ty  connected_council  connected_directivo conn
 
 	
 graph combine lose_connected_ty  lose_connected_council  lose_connected_directivo lose_connected_teacher, name(losing_connection, replace)
-graph export "$output/losing_connection.png", replace
+graph export "$output/losing_connection_robust.png", replace
 graph close _all	
 	-
 	
