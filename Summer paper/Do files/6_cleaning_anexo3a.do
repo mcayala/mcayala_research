@@ -27,6 +27,7 @@
 		rename area_ensenanza_tec area_ensenanza_tecnica
 		rename ultimo_nivel_educativo nivel_educativo_aprobado
 		rename tipo_doc tipo_documento
+		rename fuente_recursos fuente_de_recursos
 		
 	* Day of birth
 		split fecha_nacimiento, p("/")
@@ -34,7 +35,7 @@
 		destring fecha_nacimiento3, replace
 		gen edad = 2013 - fecha_nacimiento3
 		
-	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad fuente_de_recursos escalafon fecha_nacimiento
 	tempfile docentes13
 	save	`docentes13'		
 	
@@ -53,6 +54,7 @@ import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 		rename area_ensenanza_tec area_ensenanza_tecnica
 		rename ultimo_nivel_educativo nivel_educativo_aprobado
 		rename tipo_doc tipo_documento
+		rename fuente_recursos fuente_de_recursos
 	
 	* Day of birth
 		split fecha_nacimiento, p("/")
@@ -60,7 +62,7 @@ import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 		destring fecha_nacimiento3, replace
 		gen edad = 2011 - fecha_nacimiento3	
 	
-	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad fuente_de_recursos escalafon fecha_nacimiento
 	tempfile docentes11
 	save	`docentes11'
 	
@@ -79,6 +81,7 @@ import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 		rename area_ensenanza_tec area_ensenanza_tecnica
 		rename ultimo_nivel_educativo nivel_educativo_aprobado
 		rename tipo_doc tipo_documento
+		rename fuente_recursos fuente_de_recursos
 	
 	* Day of birth
 		split fecha_nacimiento, p("/")
@@ -86,8 +89,8 @@ import delimited "Anexo 3a/BASE_DOCENTES_2011.csv", clear stringcols(_all)
 		destring fecha_nacimiento3, replace
 		gen edad = 2012 - fecha_nacimiento3	
 	
-	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad
-	tempfile docentes12
+	keep year nro_documento codigo_dane apellido1 apellido2 nombre1 nombre2 fecha_vinculacion tipo_vinculacion  area_ensenanza_nombrado area_ensenanza_tecnica cargo nivel_ensenanza genero nivel_educativo_aprobado cargo nombre_cargo ubicacion zona tipo_documento edad fuente_de_recursos escalafon fecha_nacimiento
+	tempfile docentes12 
 	save	`docentes12'	
 	
 *----------------------*
@@ -109,9 +112,10 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		
 	* Rename year
 		rename anno_inf year
+		rename grado_escalafon escalafon
 		
 	* Tostring vars for merge
-		tostring cargo area_ensenanza_nombrado nivel_ensenanza nivel_educativo_aprobado nombre_cargo ubicacion zona tipo_documento, replace
+		tostring cargo area_ensenanza_nombrado nivel_ensenanza nivel_educativo_aprobado nombre_cargo ubicacion zona tipo_documento fuente_de_recursos, replace
 		destring edad, replace
 	
 	* Append date for 2011 and 2013
@@ -276,6 +280,51 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		order year document_id type_id school_code female educ_level position urban type_contract teaching_level subject subject_tec
 		sort document_id year
 		
+	* Fecha de vinculacion
+		br document_id year fecha_vinculacion
+		split fecha_vinculacion, p("/")
+		destring fecha_vinculacion3, replace
+		replace fecha_vinculacion3 = . if fecha_vinculacion3 <= 1967
+		gen years_exp = year - fecha_vinculacion3 
+		replace years_exp = 0 if years_exp < 0
+		replace years_exp = . if years_exp > 45
+		lab var years_exp "Years of experience"
+		
+	* Age when hired
+		br document_id year fecha_nacimiento
+		split fecha_nacimiento, p("/") gen(dob_)
+		destring dob_*, replace
+		gen age_hired = fecha_vinculacion3-dob_3
+		replace age_hired = . if age_hired<18
+		replace age_hired = . if age_hired>65
+		lab var age_hired "Age when hired"
+		
+		drop fecha_vinculacion1 fecha_vinculacion2 fecha_vinculacion3 dob_*
+		
+	* Fuente de recursos
+		gen own_resources = (fuente_de_recursos == "2")
+		lab var own_resources "Resources come from the school (not SGP)"
+		
+	* Estatuto
+		tab escalafon estatuto, m
+		replace estatuto = 2277 if inlist(escalafon, "01", "02", "03", "04", "05", "06", "07")
+		replace estatuto = 2277 if inlist(escalafon, "08", "09", "10", "11", "12", "13", "14")
+		replace estatuto = 2277 if inlist(escalafon, "A", "B", "BC", "ET")
+		replace estatuto = 2277 if inlist(escalafon, "IA", "IB", "IC", "PT", "PU", "SE")
+		replace estatuto = 1278 if inlist(escalafon, "1A", "1B", "1C", "1D")
+		replace estatuto = 1278 if inlist(escalafon, "2A", "2AE", "2AM", "2AD")
+		replace estatuto = 1278 if inlist(escalafon, "2B", "2BE", "2BM", "2BD")
+		replace estatuto = 1278 if inlist(escalafon, "2C", "2CE", "2CM", "2CD")
+		replace estatuto = 1278 if inlist(escalafon, "2D", "2DE", "2DM", "2DD")
+		replace estatuto = 1278 if inlist(escalafon, "3A", "3AE", "3AM", "3AD")
+		replace estatuto = 1278 if inlist(escalafon, "3B", "3BE", "3BM", "3BD")
+		replace estatuto = 1278 if inlist(escalafon, "3C", "3CE", "3CM", "3CD")
+		replace estatuto = 1278 if inlist(escalafon, "3D", "3DE", "3DM", "3DD")
+		replace estatuto = 804 if inlist(escalafon, "ET1", "ET2", "ET3", "ET4")
+		
+		gen new_estatuto = (estatuto == 1278)
+		lab var new_estatuto "Teacher is in the new estatuto"
+	
 	* Check duplicates
 		duplicates tag document_id year, gen(dup)
 		duplicates tag document_id year school_code, gen(dup2)
@@ -304,6 +353,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		replace subject_icfes = 5 if inlist(subject, 14)
 		lab val subject_icfes subject_icfes_l
 		rename subject_icfes icfes_subject
+		lab var icfes_subject "Subject according to ICFES"
 		
 *------------------------*
 * Cleaning of last names *
@@ -446,7 +496,6 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		br document_id apellido1 apellido2 if words_1 > 1
 		gen contains_de = (strpos(apellido1, "DE"))
 		*/
-	
 		
 	* gen tag for weird characters
 		foreach var in apellido1 apellido2  { //
@@ -460,8 +509,6 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 			replace `var' = `var'_3 if !mi(`var'_3) & max_tag_`var' == 1
 			drop `var'_2 `var'_3 tag_`var' max_tag_`var'
 		}		
-		
-
 				
 	* Fixing the last names that have different spellings for the same person
 		bys document_id (apellido1): gen diff = apellido1[1] != apellido1[_N] 		
@@ -548,7 +595,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 			
 			* Identify the 15 most popular
 			gsort -n_lastname, gen(count)
-			gen popular = 1 if count <= 15
+			gen popular = 1 if count <= 10
 			replace popular = 0 if mi(popular)
 			
 			* Gen probability of having that last name
@@ -583,6 +630,14 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 		drop if _merge == 2
 		drop _merge
 
+		
+		order document_id year type_id school_code female educ_level position urban type_contract teaching_level subject subject_tec apellido1 apellido2 age years_exp age_hired own_resources new_estatuto icfes_subject popular_apellido1 prob_apellido1 popular_apellido2 prob_apellido2 nombre_cargo
+		bys year: mdesc 
+		
+		lab var popular_apellido1 "Last name 1 if popular"
+		lab var popular_apellido2 "Last name 2 if popular"
+		lab var prob_apellido1 "Probability of having last name 1"
+		lab var prob_apellido2 "Probability of having last name 2"
 		
 	* Save dataset
 		*export delimited using "Docentes 2008-2017/base_docentes.csv", replace	
