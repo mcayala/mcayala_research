@@ -41,7 +41,8 @@ end
 *log using "${log}/results_saber11_familyconn_variation_$date.log", replace
 
 use "Data/merge_JF_teachers_secundaria.dta", clear
- 
+ *merge m:1 school_code using "Data/SB11_global.dta", gen(merge2)
+
 sum connected_*
 
 * Labels
@@ -89,34 +90,43 @@ sum connected_*
 	
 	keep if tot_y == 6 */
  
+  foreach var of varlist connected_ty connected_council  connected_directivo connected_teacher { //connected_council  connected_directivo connected_teacher {
+	gen year_`var' = year if `var' == 1
+	bys document_id: egen event_`var' = min(year_`var')
+	gen ever_`var' = 0
+	replace ever_`var' = 1 if year >= event_`var'
+	*drop `var'
+	*rename ever_`var' `var'
+  }	
+ 
  
 * Globals for regressions
-	global controls  "age postgrad_degree temporary urban years_exp new_estatuto"
+	global controls  "age postgrad_degree temporary  years_exp new_estatuto"
 	global fe "year document_id muni_code"
 
  	* Connected to public sector (JF)
-		reghdfe std_score connected_ty $controls, absorb($fe)
+		reghdfe std_score connected_ty $controls, absorb($fe) cluster(document_id)
 		outreg2 using "${output}/results", tex replace keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes) nocons
 
 	* Connected to a council member 
 		drop connected_ty 
 		rename connected_council connected_ty
-		reghdfe std_score connected_ty $controls, absorb($fe)
+		reghdfe std_score connected_ty $controls, absorb($fe) cluster(document_id)
 		outreg2 using "${output}/results", tex keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes) nocons
 		
 	* Connected to  admin staff in the school (including principal)
 		drop connected_ty 
 		rename connected_directivo connected_ty
-		reghdfe std_score connected_ty $controls, absorb($fe)
+		reghdfe std_score connected_ty $controls, absorb($fe) cluster(document_id)
 		outreg2 using "${output}/results", tex keep(connected_ty) 	addtext("Year FE", Yes, "Teacher FE",  Yes)	 nocons
 		
 	* Connected to any other teacher in the school
 		drop connected_ty 
 		rename connected_teacher connected_ty
-		reghdfe std_score connected_ty $controls, absorb($fe)
+		reghdfe std_score connected_ty $controls, absorb($fe) cluster(document_id)
 		outreg2 using "${output}/results", tex keep(connected_ty)	addtext("Year FE", Yes, "Teacher FE",  Yes)	 nocons
 				
-		
+		-
 * Robustness checks
 
 	* CONTINUOUS VAR

@@ -237,9 +237,6 @@ else {
 		
 		bys period: sum punt_global score_global 
 		
-	* Keep only relevant periods
-		drop if inlist(periodo, 20111, 20112, 20121)
-		
 	*-------------------*
 	* Standarize scores *
 	*-------------------*
@@ -266,7 +263,7 @@ else {
 		}		
 	
 	save "Data/SB11_2011_2017_individual.dta", replace
-
+-
 
 *---------------------------------------*		
 * Construct dataset at the school level *
@@ -308,6 +305,9 @@ else {
 		rename cole_cod_dane_establecimiento school_code
 		sort school_code periodo
 		isid school_code periodo
+
+	* Keep only relevant periods
+		drop if inlist(periodo, 20111, 20112, 20121)		
 		
 	* Keep only relevant periods and we keep only first period
 		drop if inlist(period, 20121, 20131, 20141, 20151, 20161, 20171)
