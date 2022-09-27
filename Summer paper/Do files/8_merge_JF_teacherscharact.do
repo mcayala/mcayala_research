@@ -290,7 +290,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 		
 	
 * Save dataset
-	drop *_ap*
+	drop *_ap1 *_ap2
 	save "Data/merge_JF_teachers_secundaria.dta", replace
 	restore
 	

@@ -33,6 +33,12 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 	bys document_id: gen count = _n 
 	tab count // 133,065 unique teachers
 	
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1	
+	
 * Generate ever connected
 	foreach var in connected_ty connected_tby connected_council connected_principal connected_directivo connected_teacher {
 		bys document_id: egen ever_`var' = max(`var')
@@ -78,17 +84,19 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 	drop if _merge==2
 	
 * Lab vars
-	lab var female "Teacher is female"
-	lab var edad "Teacher's age'"
-	lab var urban "Teaches in urban area"
+	lab var female "Female"
+	lab var age "Age"
 	lab var prom "Merit exam test score"
-	lab var temporary "Type of contract: temporary"
-	lab var  score "Test score"
+	lab var temporary "Temporary contract"
+	lab var score "Students test score"
+	lab var years_exp "Years of experience"
+	lab var new_estatuto "New regulation"
+	lab var postgrad_degree "Postgrad degree"
 	
 	egen double fe = group(school_code2)
 	
 * Balance table
-	global DESCVARS female age postgrad_degree temporary urban years_exp new_estatuto  score prom 
+	global DESCVARS female age postgrad_degree temporary years_exp new_estatuto  score prom 
 
 foreach x in connected_ty connected_council connected_directivo connected_teacher {
 	mata: mata clear
@@ -145,6 +153,12 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 
 br document_id year connected_ty connected_council connected_directivo connected_teacher
 sort document_id year 
+
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1
  
 gen uno = 1
 
@@ -185,6 +199,12 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data"
 
 use "merge_JF_teachers_secundaria.dta", clear
 
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1
+
 mdesc muni_code
 
 gen uno = 1
@@ -194,8 +214,6 @@ collapse (mean) connected_ty connected_council connected_directivo connected_tea
 	save	`prop_muni'
 
 *spshape2dta "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data/col-administrative-divisions-shapefiles/col_admbnda_adm2_mgn_20200416",  replace saving(municipios)	
-
-
 
 use "municipios.dta", clear
 
@@ -212,10 +230,10 @@ format connected_ty  %12.4fc
 set scheme white_tableau
 
 
-spmap connected_ty using "municipios_shp2", id(_ID) clnum(5) legstyle(2) title("Connected to Non-elected Bureaucrat", size(5)) fcolor(Blues2) name(connected_ty, replace) 
-spmap connected_council using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Council Member", size(5)) fcolor(Blues2) name(connected_council, replace)
-spmap connected_directivo using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Admin Staff in the School", size(5)) fcolor(Blues2) name(connected_directivo, replace)
-spmap connected_teacher using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Any Teacher in the School", size(5)) fcolor(Blues2) name(connected_teacher, replace)
+spmap connected_ty using "municipios_shp2", id(_ID) clnum(5) legstyle(2) title("Panel A: Connected to Non-elected Bureaucrat", size(4)) fcolor(Blues2) name(connected_ty, replace) 
+spmap connected_council using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel B: Connected to Council Member", size(4)) fcolor(Blues2) name(connected_council, replace)
+spmap connected_directivo using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel C: Connected to Admin Staff in the School", size(4)) fcolor(Blues2) name(connected_directivo, replace)
+spmap connected_teacher using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel D: Connected to Any Teacher in the School", size(4)) fcolor(Blues2) name(connected_teacher, replace)
 
 graph combine connected_ty connected_council, name(maps1, replace)
 graph export "$output/maps1.png", replace

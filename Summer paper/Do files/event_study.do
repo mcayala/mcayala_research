@@ -7,7 +7,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
  
  
 global controls  "age postgrad_degree temporary urban years_exp new_estatuto"
-global fe "year document_id school_code" 
+global fe "year document_id" 
 global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
 
 use "Data/merge_JF_teachers_secundaria.dta", clear
