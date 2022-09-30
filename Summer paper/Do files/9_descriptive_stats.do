@@ -96,7 +96,7 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 	egen double fe = group(school_code2)
 	
 * Balance table
-	global DESCVARS female age postgrad_degree temporary years_exp new_estatuto  score prom 
+	global DESCVARS female age postgrad_degree temporary years_exp  score prom 
 
 foreach x in connected_ty connected_council connected_directivo connected_teacher {
 	mata: mata clear
@@ -139,9 +139,7 @@ foreach x in connected_ty connected_council connected_directivo connected_teache
     multicol(1,2,3;1,5,3) 	
 	
 }	
-	  	
-	
--
+	  
 	  
 
 *--------------------------------------*

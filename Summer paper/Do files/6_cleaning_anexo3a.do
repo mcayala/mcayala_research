@@ -595,7 +595,7 @@ use "Docentes 2008-2017/DOCENTES_2012_2017.dta", clear
 			
 			* Identify the 15 most popular
 			gsort -n_lastname, gen(count)
-			gen popular = 1 if count <= 10
+			gen popular = 1 if count <= 15
 			replace popular = 0 if mi(popular)
 			
 			* Gen probability of having that last name

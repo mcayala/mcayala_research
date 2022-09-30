@@ -254,6 +254,22 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 
 	sum connected_*
 
+	* Labels
+	lab var connected_ty "Connected to Non-elected Bureaucrat"
+	lab var connected_tby "Top Connected (JF)"
+	lab var connected_council "Connected to Council Member"
+	lab var connected_council2 "Connected to Council Member (no common last names)"
+	lab var connected_council3 "Connected to Council Member (continuous var)"
+	lab var connected_principal "Connected to Principal"
+	lab var connected_principal2 "Connected to Principal (no common last names)"
+	lab var connected_principal3 "Connected to Principal (continuous var)"
+	lab var connected_directivo "Connected to Admin Staff in the School"
+	lab var connected_directivo2 "Connected to Admin Staff in the School (no common last names)"
+	lab var connected_directivo3 "Connected to Admin Staff in the School (continuous var)"
+	lab var connected_teacher "Connected to Any Teacher in the School"
+	lab var connected_teacher2 "Connected to Any Teacher in the School (no common last names)"
+	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)" 	
+	
 *----------------------*
 * Merge Saber11 scores *
 *----------------------*
@@ -285,7 +301,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 	
 	* Temporary position
 	tab type_contract, m
-	gen temporary = (type_contract == 2)
+	gen temporary = (type_contract == 1)
 	replace temporary = . if mi(type_contract)
 		
 	
@@ -321,7 +337,7 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 			-----------------------------------------
 
 		*/
-		keep if _merge == 3
+		keep if _merge == 3	
 	
 	* Save dataset
 		save "Data/school_subject_with_testscores_dataset.dta", replace
