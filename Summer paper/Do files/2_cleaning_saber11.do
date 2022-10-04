@@ -3,6 +3,7 @@
 * Purpose: This do file cleans Saber 11 dataset
 
 cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
+global divipola "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data/divipola.dta"
 
 *-----------------*
 * Import datasets *
@@ -153,21 +154,21 @@ cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 if inlist(`x', 20122, 20131, 20132, 20141) {
 	di "loop 1"
 			destring punt_matematicas punt_ingles punt_ciencias_sociales punt_biologia punt_filosofia punt_fisica punt_quimica punt_lenguaje punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia punt_profundiza_csociales punt_profundiza_lenguaje punt_profundiza_matematica, replace force
-	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old recaf_*
+	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old recaf_* cole_codigo_icfes
 	}			
 else if inlist(`x', 20142, 20151, 20152) {
 			di "loop 2"
-		keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas  punt_razona_cuantitativo  punt_comp_ciudadana  punt_ingles  desemp_ingles punt_global estu_puesto *_old
+		keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas  punt_razona_cuantitativo  punt_comp_ciudadana  punt_ingles  desemp_ingles punt_global estu_puesto *_old cole_codigo_icfes
 	}
 else if inlist(`x', 20111, 20112, 20121) {
 			di "loop 3"
 			destring punt_matematicas punt_ingles punt_ciencias_sociales punt_biologia punt_filosofia punt_fisica punt_quimica punt_lenguaje punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia punt_profundiza_csociales punt_profundiza_lenguaje punt_profundiza_matematica, replace force
-	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old
+	keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_matematicas punt_ciencias_sociales punt_filosofia punt_ingles desemp_ingles punt_fisica punt_lenguaje punt_quimica punt_biologia punt_interdisc_medioambiente punt_interdisc_violenciaysoc punt_profundiza_biologia desemp_profundiza_biologia punt_profundiza_csociales desemp_profundiza_csociales punt_profundiza_lenguaje desemp_profundiza_lenguaje punt_profundiza_matematica desemp_profundiza_matematica estu_puesto *_old cole_codigo_icfes
 	}
 
 else {
 			di "loop 4"
-			keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas   punt_ingles  desemp_ingles punt_global *_old
+			keep periodo estu_genero estu_consecutivo estu_estudiante estu_fechanacimiento estu_depto_reside estu_cod_reside_depto estu_mcpio_reside estu_cod_reside_mcpio fami_estratovivienda fami_educacionpadre fami_educacionmadre fami_tieneinternet fami_tienecomputador fami_tienelavadora  fami_tieneautomovil cole_cod_dane_establecimiento cole_genero cole_naturaleza cole_calendario cole_bilingue cole_caracter cole_cod_mcpio_ubicacion cole_mcpio_ubicacion cole_cod_depto_ubicacion cole_depto_ubicacion punt_lectura_critica  punt_matematicas  punt_c_naturales  punt_sociales_ciudadanas   punt_ingles  desemp_ingles punt_global *_old cole_codigo_icfes
 		}
 		
 	save "Dataicfes/4. Saber11/3. Resultados Saber11/SB11_`x'_clean.dta", replace
@@ -237,9 +238,6 @@ else {
 		
 		bys period: sum punt_global score_global 
 		
-	* Keep only relevant periods
-		drop if inlist(periodo, 20111, 20112, 20121)
-		
 	*-------------------*
 	* Standarize scores *
 	*-------------------*
@@ -266,7 +264,6 @@ else {
 		}		
 	
 	save "Data/SB11_2011_2017_individual.dta", replace
-
 
 *---------------------------------------*		
 * Construct dataset at the school level *
@@ -304,10 +301,13 @@ else {
 	*/	
 		
 	* Collapse by the school
-		collapse (mean) std_* score_* male female strata_* father_educ mother_educ (count) N = score_global (first) muni_code, by(periodo cole_cod_dane_establecimiento)
+		collapse (mean) std_* score_* male female strata_* father_educ mother_educ estu_puesto (count) N = score_global (first) muni_code, by(periodo cole_cod_dane_establecimiento)
 		rename cole_cod_dane_establecimiento school_code
 		sort school_code periodo
 		isid school_code periodo
+
+	* Keep only relevant periods
+		drop if inlist(periodo, 20111, 20112, 20121)		
 		
 	* Keep only relevant periods and we keep only first period
 		drop if inlist(period, 20121, 20131, 20141, 20151, 20161, 20171)
@@ -344,5 +344,23 @@ else {
 	save "Data/SB11_2011_2017_school_level.dta", replace
 	
 	
+*----------------------------------------------*
+* Create control for score of Saber 11 in 2011 * 
+*----------------------------------------------*	
+
+	use "Data/SB11_2011_2017_individual.dta", clear
+
+* Keep 2011-1
+	keep if periodo == 20112
 	
+* Collapse
+	collapse (mean) estu_puesto, by(cole_cod_dane_establecimiento)
+	rename cole_cod_dane_establecimiento school_code
+	
+* Generate above and below media (mas grande el average del puesto peor el colegio)
+	sum estu_puesto, d
+	gen above_median = 1 if estu_puesto <= `r(p50)'	
+	replace above_median = 0 if mi(above_median)
+	
+	save "Data/score_avg_2011.dta", replace
 	

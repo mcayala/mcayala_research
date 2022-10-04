@@ -3,37 +3,6 @@ global log "/Users/camila/Documents/GitHub/mcayala_research/Summer paper/Log fil
 global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/Output"
 *set scheme plotplainblind
 
-global date "2022-08-04"
-
-capt prog drop mergemodels
-prog mergemodels, eclass
-// assuming that last element in e(b)/e(V) is _cons
- version 8
- syntax namelist
- tempname b V tmp
- foreach name of local namelist {
-   qui est restore `name'
-   mat `b' = nullmat(`b') , e(b)
-   mat `b' = `b'[1,1..colsof(`b')-1]
-   mat `tmp' = e(V)
-   mat `tmp' = `tmp'[1..rowsof(`tmp')-1,1..colsof(`tmp')-1]
-   capt confirm matrix `V'
-   if _rc {
-     mat `V' = `tmp'
-   }
-   else {
-     mat `V' = ///
-      ( `V' , J(rowsof(`V'),colsof(`tmp'),0) ) \ ///
-      ( J(rowsof(`tmp'),colsof(`V'),0) , `tmp' )
-   }
- }
- local names: colfullnames `b'
- mat coln `V' = `names'
- mat rown `V' = `names'
- eret post `b' `V'
- eret local cmd "whatever"
-end
-
 *---------------------------------*
 * Variation in family connections *
 *---------------------------------*
@@ -41,165 +10,268 @@ end
 *log using "${log}/results_saber11_familyconn_variation_$date.log", replace
 
 use "Data/merge_JF_teachers_secundaria.dta", clear
- 
-global controls  "age type_contract"
- 
-sum connected_*
 
-* Labels
-	lab var connected_ty "Connected to Non-elected Bureaucrat"
-	lab var connected_tby "Top Connected (JF)"
-	lab var connected_council "Connected to Council Member"
-	lab var connected_council2 "Connected to Council Member (no common last names)"
-	lab var connected_council2 "Connected to Council Member (continuous var)"
-	lab var connected_principal "Connected to Principal"
-	lab var connected_principal2 "Connected to Principal (no common last names)"
-	lab var connected_principal3 "Connected to Principal (continuous var)"
-	lab var connected_directivo "Connected to Admin Staff in the School"
-	lab var connected_directivo2 "Connected to Admin Staff in the School (no common last names)"
-	lab var connected_directivo3 "Connected to Admin Staff in the School (continuous var)"
-	lab var connected_teacher "Connected to Any Teacher in the School"
-	lab var connected_teacher2 "Connected to Any Teacher in the School (no common last names)"
-	lab var connected_teacher3 "Connected to Any Teacher in the School (continuous var)"
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1
+	sum connected_*
+	
+* Define always connected, never connected and switchers
+	br document_id year connected_ty //connected_council  connected_directivo connected_teacher
+	sort document_id year
+	foreach var of varlist connected_ty connected_council  connected_directivo connected_teacher  {  // 
+		bys document_id (year): egen max_`var' = max(`var')
+		bys document_id (year): egen min_`var' = min(`var')
+		gen diff_`var' = (max_`var' != min_`var')
+		gen always_`var' = (max_`var' == 1 & min_`var' == 1)
+		gen never_`var' = (max_`var' == 0 & min_`var' == 0)
+		gen switch_`var' = (diff_`var' == 1)
+		tab  always_`var' never_`var' if switch_`var' == 0, m
+		tab  always_`var' never_`var' if switch_`var' == 1, m
+		drop diff_`var' max_`var' min_`var'
+	}
  
- 
+* Globals for regressions
+	global controls  "age postgrad_degree temporary  years_exp new_estatuto"
+	global fe "year document_id muni_code"
+	
+	preserve
+	
  	* Connected to public sector (JF)
-		reghdfe std_score connected_ty $controls, absorb(year document_id)
-		outreg2 using "${output}/results", tex replace keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes)
+		reghdfe std_score connected_ty $controls if always_connected_ty == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
 
+		outreg2 using "${output}/results", tex replace keep(connected_ty) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
 	* Connected to a council member 
 		drop connected_ty 
 		rename connected_council connected_ty
-		reghdfe std_score connected_ty $controls, absorb(year document_id)
-		outreg2 using "${output}/results", tex keep(connected_ty) addtext("Year FE", Yes, "Teacher FE",  Yes)
+		reghdfe std_score connected_ty $controls if always_connected_council == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5)  ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
 		
 	* Connected to  admin staff in the school (including principal)
 		drop connected_ty 
 		rename connected_directivo connected_ty
-		reghdfe std_score connected_ty $controls, absorb(year document_id)
-		outreg2 using "${output}/results", tex keep(connected_ty) 	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+		reghdfe std_score connected_ty $controls if always_connected_directivo == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
 		
 	* Connected to any other teacher in the school
 		drop connected_ty 
 		rename connected_teacher connected_ty
-		reghdfe std_score connected_ty $controls, absorb(year document_id)
-		outreg2 using "${output}/results", tex keep(connected_ty)	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+		reghdfe std_score connected_ty $controls if always_connected_teacher == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5)  ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
 				
 		
-* Robustness checks
+*-------------------*
+* Robustness checks *
+*-------------------*
 
+* CONTINUOUS VAR
 
 	* Connected to a council member 
 		rename connected_council3 connected_ty3
-		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
-		outreg2 using "${output}/results_robustness", tex replace keep(connected_ty3) addtext("Year FE", Yes, "Teacher FE",  Yes)
+		reghdfe std_score connected_ty3 $controls if always_connected_council == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robustness", tex replace keep(connected_ty3) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
 		
 	* Connected to  admin staff in the school (including principal)
 		drop connected_ty3 
-		rename connected_directivo3 connected_ty3
-		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
-		outreg2 using "${output}/results_robustness", tex keep(connected_ty3) 	addtext("Year FE", Yes, "Teacher FE",  Yes)	
+		rename connected_directivo3 connected_ty3 
+		reghdfe std_score connected_ty3 $controls if always_connected_directivo == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robustness", tex keep(connected_ty3) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count	
 		
 	* Connected to any other teacher in the school
 		drop connected_ty3 
 		rename connected_teacher3 connected_ty3
-		reghdfe std_score connected_ty3 $controls, absorb(year document_id)
-		outreg2 using "${output}/results_robustness", tex keep(connected_ty3)	addtext("Year FE", Yes, "Teacher FE",  Yes)	
-	-					
+		reghdfe std_score connected_ty3 $controls if always_connected_teacher == 0, absorb($fe) cluster(document_id)
 		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
 		
-estimates clear
+		outreg2 using "${output}/results_robustness", tex keep(connected_ty3) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
+	
+		
+* DROPPING COMMON LAST NAMES
 
-	* Connected to public sector (JF)
-	reghdfe std_score connected_ty $controls, absorb(year document_id)
-	est store mod1
-	
-	* Connected to top bureaucrat (JF)	
-	reghdfe std_score connected_tby $controls, absorb(year document_id)
-	est store mod2
-	
 	* Connected to a council member 
-	reghdfe std_score connected_council $controls, absorb(year document_id)
-	est store mod3
+		rename connected_council2 connected_ty2
+		reghdfe std_score connected_ty2 $controls if always_connected_council == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robustness2", tex replace keep(connected_ty2) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count		
+				
+	* Connected to  admin staff in the school (including principal)
+		drop connected_ty2
+		rename connected_directivo2 connected_ty2
+		reghdfe std_score connected_ty2 $controls if always_connected_directivo == 0, absorb($fe) cluster(document_id)
 
-	* Connected to the principal of the school
-	reghdfe std_score connected_principal $controls, absorb(year document_id)
-	est store mod4
-	
-	* Connected to admin staff in the school (including principal)
-	reghdfe std_score connected_directivo $controls, absorb(year document_id)
-	est store mod5
-	
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robustness2", tex keep(connected_ty2) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count	
+		
 	* Connected to any other teacher in the school
-	reghdfe std_score connected_teacher $controls, absorb(year document_id)
-	est store mod6
-	
-* Without common last names	
-	
-	* Connected to a council member - without common last names
-	drop connected_council 
-	rename connected_council2 connected_council 
-	reghdfe std_score connected_council $controls, absorb(year document_id)
-	est store mod7
+		drop connected_ty2
+		rename connected_teacher2 connected_ty2
+		reghdfe std_score connected_ty2 $controls if always_connected_teacher == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robustness2", tex keep(connected_ty2) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count		
+		
 
-	* Connected to the principal of the school
-	drop connected_principal 
-	rename connected_principal2 connected_principal
-	reghdfe std_score connected_principal $controls, absorb(year document_id)
-	est store mod8
+* USING ONLY THE SAMPLE THAT DOES NOT CHANGE OVER TIME
+	restore
+	* keep teachers that are all the time
+		sort document_id year	
+		tab year, gen(y_)
+		rename (y_1 y_2 y_3 y_4 y_5 y_6) (y_2012 y_2013 y_2014 y_2015 y_2016 y_2017)
+		br document_id year y_*
+		sort document_id year
+		foreach y in 2012 2013 2014 2015 2016 2017 {
+			bys document_id: egen year_`y' = max(y_`y')
+		}
+		egen tot_y = rowtotal(year_2012 year_2013 year_2014 year_2015 year_2016 year_2017)
+		
+		bys document_id (year): gen count = _n
+		tab tot_y if count == 1 
+		drop count
+		keep if tot_y == 6
+		/*	  
+				  tot_y |      Freq.     Percent        Cum.
+		------------+-----------------------------------
+				  1 |          3        0.00        0.00
+				  2 |     15,898       14.44       14.44
+				  3 |     18,356       16.67       31.11
+				  4 |     11,580       10.52       41.63
+				  5 |     17,007       15.45       57.07
+				  6 |     47,265       42.93      100.00 // 43% of individual are there for the six years
+		------------+-----------------------------------
+			  Total |    110,109      100.00
+		*/
+		
+		
+		
+	* Connected to public sector (JF)
+		reghdfe std_score connected_ty $controls if always_connected_ty == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
 
-	* Connected to admin staff in the school (including principal)
-	drop connected_directivo 
-	rename connected_directivo2 connected_directivo
-	reghdfe std_score connected_directivo $controls, absorb(year document_id)
-	est store mod9
-
+		outreg2 using "${output}/results_robust_sample", tex replace keep(connected_ty) nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
+	* Connected to a council member 
+		drop connected_ty 
+		rename connected_council connected_ty
+		reghdfe std_score connected_ty $controls if always_connected_council == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robust_sample", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5)  ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
+		
+	* Connected to  admin staff in the school (including principal)
+		drop connected_ty 
+		rename connected_directivo connected_ty
+		reghdfe std_score connected_ty $controls if always_connected_directivo == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robust_sample", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5) ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count
+		
 	* Connected to any other teacher in the school
-	drop connected_teacher 
-	rename connected_teacher2 connected_teacher
-	reghdfe std_score connected_teacher $controls, absorb(year document_id)
-	est store mod10
-
-* Continuous var
-	
-	* Connected to a council member - without common last names
-	drop connected_council 
-	rename connected_council3 connected_council 
-	reghdfe std_score connected_council $controls, absorb(year document_id)
-	est store mod11
-	
-	* Connected to the principal of the school
-	drop connected_principal 
-	rename connected_principal3 connected_principal
-	reghdfe std_score connected_principal $controls, absorb(year document_id)
-	est store mod12
-	
-	* Connected to admin staff in the school (including principal)
-	drop connected_directivo 
-	rename connected_directivo3 connected_directivo
-	reghdfe std_score connected_directivo $controls, absorb(year document_id)
-	est store mod13
-	
-	* Connected to any other teacher in the school
-	drop connected_teacher
-	rename connected_teacher3 connected_teacher
-	reghdfe std_score connected_teacher $controls, absorb(year document_id)
-	est store mod14	
-	
-	mergemodels mod1 mod2 mod3 mod4 mod5 mod6 
-	est sto allmodels
-	mergemodels  mod7 mod8 mod9  mod10
-	est sto allmodels2
-	mergemodels  mod11 mod12 mod13 mod14
-	est sto allmodels3
-	esttab allmodels allmodels2 allmodels3, keep(connected_*) $esttab_opt noconst label  $pvalues  mtitles("Basic" "No common last names" "Continuous measure")
-	-
-* EVENT STUDY
-
-
-	
-*log c
-
-
-*copy "${log}/results_saber11_familyconn_variation_$date.log" ///
-*	"Log files/results_saber11_familyconn_variation_$date.log", replace
+		drop connected_ty 
+		rename connected_teacher connected_ty
+		reghdfe std_score connected_ty $controls if always_connected_teacher == 0, absorb($fe) cluster(document_id)
+		
+		gen sample = e(sample)
+		bys document_id (year): gen count = _n if sample == 1
+		count if sample == 1 & count == 1
+		loc r2 = string(`e(r2)', "%04.3fc") 
+		
+		outreg2 using "${output}/results_robust_sample", tex keep(connected_ty)  nocons nor2 bdec(5) sdec(5)  ///
+			addtext("Teachers", `r(N)', "Year FE", Yes, "Teacher FE",  Yes, "R-squared", "`r2'") 
+		drop sample count	
+		

@@ -5,13 +5,18 @@
  cd "/Users/camila/Dropbox/PhD/Second year/Summer paper"
 *  ssc install blindschemes
  set scheme plotplainblind
- ssc install geo2xy, replace     
+/*ssc install geo2xy, replace     
 ssc install palettes, replace        
 ssc install colrspace, replace
 ssc install spmap, replace
-
+*/
 
 global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
+
+	
+*---------------------------*
+* Connected vs no connected *
+*---------------------------*
 
 * Prepare merit test
 	use "/Users/camila/Dropbox/Maestria/Tesis/Servidor/Saber 11/Datasets/concurso_docentes.dta", clear
@@ -21,106 +26,18 @@ global output "/Users/camila/Dropbox/PhD/Second year/Summer paper/output"
 	tempfile merit_test
 	save	`merit_test'
 
-*--------------------------------------*
-* Percentage of connected in each year *
-*--------------------------------------*
-	
-* Open dataset
-use "Data/merge_JF_teachers_secundaria.dta", clear
-
-br document_id year connected_ty connected_council connected_directivo connected_teacher
-sort document_id year 
-
-gen uno = 1
-
-collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(year)
-
-foreach var in connected_ty connected_council connected_directivo connected_teacher {
-	replace `var' = `var'*100
-}
-
-	lab var connected_ty "Connected to Non-elected Bureaucrat"
-	lab var connected_council "Connected to Council Member"
-	lab var connected_directivo "Connected to Admin Staff in the School"
-	lab var connected_teacher "Connected to Any Teacher in the School"
-
-graph bar connected_ty connected_directivo connected_council  connected_teacher, over(year, label(labsize(vsmall))) blabel(total, format(%9.1f) size(vsmall)) legend(cols(2) order(1 "Connected to Non-elected Bureaucrat" 2 "Connected to Admin Staff in the School" 3 "Connected to Council Member" 4 "Connected to Any Teacher in the School") size(vsmall) position(6)) ytitle("Percentage of secondary teachers", size(small)) ylabel(,labsize(vsmall)) //note(Source: Ministry of National Education of Colombia and Riaño (2022), size(tiny))
-graph export "$output/percent_connected_year.png", replace
-
-graph close _all
-
-*---------------------*
-* Map by municipality * 
-*---------------------*
-
-cd "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data"
-
-	/*
-	use "municipios_shp", clear
-
-	// Make sure the coordinates are inside the (-180,180) bounds   
-
-	replace _X = 180 if _X > 180 & _X!=.
-
-	geo2xy _Y _X, proj(web_mercator) replace
-
-	save "municipios_shp2.dta", replace
-*/
-
-
-use "merge_JF_teachers_secundaria.dta", clear
-
-mdesc muni_code
-
-gen uno = 1
-
-collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(muni_code)
-	tempfile prop_muni
-	save	`prop_muni'
-
-*spshape2dta "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data/col-administrative-divisions-shapefiles/col_admbnda_adm2_mgn_20200416",  replace saving(municipios)	
-
-
-
-use "municipios.dta", clear
-
-gen muni_code = substr(ADM2_PCODE, 3,.)
-destring muni_code, replace
-isid muni_code
-
-merge 1:1 muni_code using `prop_muni'
-drop if _merge == 2
-
-
-format connected_ty connected_council connected_directivo connected_teacher %12.2fc
-format connected_ty  %12.4fc
-set scheme white_tableau
-
-
-spmap connected_ty using "municipios_shp2", id(_ID) clnum(5) legstyle(2) title("Connected to Non-elected Bureaucrat", size(5)) fcolor(Blues2) name(connected_ty, replace) 
-spmap connected_council using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Council Member", size(5)) fcolor(Blues2) name(connected_council, replace)
-spmap connected_directivo using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Admin Staff in the School", size(5)) fcolor(Blues2) name(connected_directivo, replace)
-spmap connected_teacher using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Connected to Any Teacher in the School", size(5)) fcolor(Blues2) name(connected_teacher, replace)
-
-graph combine connected_ty connected_council, name(maps1, replace)
-graph export "$output/maps1.png", replace
-
-
-graph combine connected_directivo connected_teacher, name(maps2, replace)
-graph export "$output/maps2.png", replace
-
-graph close _all
-	
-*---------------------------*
-* Connected vs no connected *
-*---------------------------*
-
 * Open dataset
 use "Data/merge_JF_teachers_secundaria.dta", clear
 
 * Count by teacher
 	bys document_id: gen count = _n 
 	tab count // 133,065 unique teachers
+	
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1	
 	
 * Generate ever connected
 	foreach var in connected_ty connected_tby connected_council connected_principal connected_directivo connected_teacher {
@@ -161,42 +78,25 @@ use "Data/merge_JF_teachers_secundaria.dta", clear
 	tab ever_connected_teacher if count == 1 & ever_connected_ty == 0 & ever_connected_council== 0 & ever_connected_directivo==0,  m
 	*/
 	
-* Education level
-	tab educ_level
-	gen 	educ_level2 = educ_level
-	replace educ_level2 = 2 if educ_level == 3
-	replace educ_level2 = 2 if educ_level == 4
-	lab def educ_level2 0 "0: None" 1 "1: High school" 2 "2: More than high school (vocational, bachelor or posgraduate)"
-	lab val educ_level2 educ_level2
-
-* Create variables	
-	tab educ_level2, gen(educ_level2_)
-	tab type_contract, gen(type_contract)
-	
-	
 * Merge merit test
 	drop _merge
 	merge m:1 document_id using `merit_test'
 	drop if _merge==2
 	
 * Lab vars
-	lab var female "Teacher is female"
-	lab var edad "Teacher's age'"
-	lab var educ_level2_1 "Educ level: None"
-	lab var educ_level2_2 "Educ level: High school"
-	lab var educ_level2_3 "Educ level: More than high school"
-	lab var urban "Teaches in urban area"
-	lab var type_contract1 "Type of contract: Temporary"
-	lab var type_contract2 "Type of contract: Permanent"
+	lab var female "Female"
+	lab var age "Age"
 	lab var prom "Merit exam test score"
-
-	
+	lab var temporary "Temporary contract"
+	lab var score "Students test score"
+	lab var years_exp "Years of experience"
+	lab var new_estatuto "New regulation"
+	lab var postgrad_degree "Postgrad degree"
 	
 	egen double fe = group(school_code2)
 	
 * Balance table
-	global DESCVARS female edad type_contract1 educ_level2_1 educ_level2_2 educ_level2_3 urban prom
-	
+	global DESCVARS female age postgrad_degree temporary years_exp  score prom 
 
 foreach x in connected_ty connected_council connected_directivo connected_teacher {
 	mata: mata clear
@@ -239,15 +139,105 @@ foreach x in connected_ty connected_council connected_directivo connected_teache
     multicol(1,2,3;1,5,3) 	
 	
 }	
-	  	
-	
-	
-	
-
-	
-	
-	
-	
-	
-
 	  
+	  
+
+*--------------------------------------*
+* Percentage of connected in each year *
+*--------------------------------------*
+	
+* Open dataset
+use "Data/merge_JF_teachers_secundaria.dta", clear
+
+br document_id year connected_ty connected_council connected_directivo connected_teacher
+sort document_id year 
+
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1
+ 
+gen uno = 1
+
+collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(year)
+
+foreach var in connected_ty connected_council connected_directivo connected_teacher {
+	replace `var' = `var'*100
+}
+
+	lab var connected_ty "Connected to Non-elected Bureaucrat"
+	lab var connected_council "Connected to Council Member"
+	lab var connected_directivo "Connected to Admin Staff in the School"
+	lab var connected_teacher "Connected to Any Teacher in the School"
+
+graph bar connected_ty connected_directivo connected_council  connected_teacher, over(year, label(labsize(vsmall))) blabel(total, format(%9.1f) size(vsmall)) legend(cols(2) order(1 "Connected to Non-elected Bureaucrat" 2 "Connected to Admin Staff in the School" 3 "Connected to Council Member" 4 "Connected to Any Teacher in the School") size(vsmall) position(6)) ytitle("Percentage of secondary teachers", size(small)) ylabel(,labsize(vsmall)) //note(Source: Ministry of National Education of Colombia and Riaño (2022), size(tiny))
+graph export "$output/percent_connected_year.png", replace
+
+graph close _all
+
+*---------------------*
+* Map by municipality * 
+*---------------------*
+
+cd "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data"
+
+	/*
+	use "municipios_shp", clear
+
+	// Make sure the coordinates are inside the (-180,180) bounds   
+
+	replace _X = 180 if _X > 180 & _X!=.
+
+	geo2xy _Y _X, proj(web_mercator) replace
+
+	save "municipios_shp2.dta", replace
+*/
+
+
+use "merge_JF_teachers_secundaria.dta", clear
+
+* Numero de years en los que aparece
+	bys document_id: gen n_years = _N
+	
+* Drop the ones I only observe once
+	drop if n_years == 1
+
+mdesc muni_code
+
+gen uno = 1
+
+collapse (mean) connected_ty connected_council connected_directivo connected_teacher (sum) uno, by(muni_code)
+	tempfile prop_muni
+	save	`prop_muni'
+
+*spshape2dta "/Users/camila/Dropbox/PhD/Second year/Summer paper/Data/col-administrative-divisions-shapefiles/col_admbnda_adm2_mgn_20200416",  replace saving(municipios)	
+
+use "municipios.dta", clear
+
+gen muni_code = substr(ADM2_PCODE, 3,.)
+destring muni_code, replace
+isid muni_code
+
+merge 1:1 muni_code using `prop_muni'
+drop if _merge == 2
+
+
+format connected_ty connected_council connected_directivo connected_teacher %12.2fc
+format connected_ty  %12.4fc
+set scheme white_tableau
+
+
+spmap connected_ty using "municipios_shp2", id(_ID) clnum(5) legstyle(2) title("Panel A: Connected to Non-elected Bureaucrat", size(4)) fcolor(Blues2) name(connected_ty, replace) 
+spmap connected_council using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel B: Connected to Council Member", size(4)) fcolor(Blues2) name(connected_council, replace)
+spmap connected_directivo using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel C: Connected to Admin Staff in the School", size(4)) fcolor(Blues2) name(connected_directivo, replace)
+spmap connected_teacher using "municipios_shp2", id(_ID)  clnum(5) legstyle(2) title("Panel D: Connected to Any Teacher in the School", size(4)) fcolor(Blues2) name(connected_teacher, replace)
+
+graph combine connected_ty connected_council, name(maps1, replace)
+graph export "$output/maps1.png", replace
+
+
+graph combine connected_directivo connected_teacher, name(maps2, replace)
+graph export "$output/maps2.png", replace
+
+graph close _all
